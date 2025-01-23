@@ -13,10 +13,6 @@ def overlay_image(frame, image_with_transparency, x_offset, y_offset):
     # Extract the region of interest (ROI) from the frame where the image will be placed
     roi = frame[y_offset:y_offset + img_height, x_offset:x_offset + img_width]
 
-    # Ensure the ROI is valid (it shouldn't have zero width or height)
-    if roi.shape[0] == 0 or roi.shape[1] == 0:
-        return frame  # Skip if the region is invalid
-
     # Separate the channels of the image with transparency
     img_b, img_g, img_r, img_alpha = cv2.split(image_with_transparency)
 
@@ -62,9 +58,9 @@ while True:
     # Update the position of the overlay image
     x_offset += x_step
 
-    # When the image goes off the right side of the frame, reset its position to the left
-    if x_offset + img_width > frame_width:
-        x_offset = -img_width  # Start from the left side again
+    # When the image goes off the right side of the frame, reset its position to the left immediately
+    if x_offset > frame_width - img_width:
+        x_offset = 20  # Start from the left side immediately
 
     # Overlay the image with transparency onto the video frame
     frame = overlay_image(frame, image, x_offset, y_offset)
