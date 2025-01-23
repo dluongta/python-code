@@ -2,14 +2,14 @@ import cv2
 
 def merge_videos(video_paths, output_video_path):
     """
-    Ghép nhiều video lại với nhau và lưu video đầu ra.
+    Merge multiple videos and save the output video.
 
     Args:
-        video_paths (list): Danh sách đường dẫn đến các video cần ghép.
-        output_video_path (str): Đường dẫn đến video đầu ra.
+        video_paths (list): List of paths to the videos to merge.
+        output_video_path (str): Path to the output video.
     """
-
-    out = None  # Khởi tạo video writer
+    
+    out = None  # Initialize video writer
 
     for video_path in video_paths:
         cap = cv2.VideoCapture(video_path)
@@ -21,13 +21,14 @@ def merge_videos(video_paths, output_video_path):
                 break
 
             if out is None:
-                # Tạo VideoWriter cho video đầu ra nếu chưa được khởi tạo
+                # Initialize VideoWriter for the output video if not already created
                 fps = cap.get(cv2.CAP_PROP_FPS)
                 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (width, height))
+                # Use 'mp4v' codec which works better for MP4 output
+                out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
-            # Kiểm tra frame hợp lệ trước khi ghi vào video đầu ra
+            # Check if the frame is valid before writing to the output video
             if frame is not None:
                 out.write(frame)
 
@@ -36,8 +37,8 @@ def merge_videos(video_paths, output_video_path):
     if out is not None:
         out.release()
 
-# Ví dụ sử dụng hàm merge_videos
-video_paths = ['video1.mp4', 'video2.mp4']  # Danh sách đường dẫn đến các video cần ghép
-output_video_path = 'output_video.mp4'  # Đường dẫn đến video đầu ra
+# Example usage of merge_videos function
+video_paths = ['final_video_with_slider_transition.mp4', 'final_video_with_slider.mp4']  # List of input video paths
+output_video_path = 'output_video.mp4'  # Path for the output video
 
 merge_videos(video_paths, output_video_path)
