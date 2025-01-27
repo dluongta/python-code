@@ -57,7 +57,7 @@ def overlay_video_on_blue(main_video_path, background_video_path, output_video_p
     print(f"Video has been output at {output_video_path}")
 
 # Parameters
-main_video_path = 'video1.mp4'  # Path to the main video (video1)
+main_video_path = 'video3.mp4'  # Path to the main video (video1)
 background_video_path = 'video2.mp4'  # Path to the background video (video2)
 output_video_path = 'output_video.mp4'  # Path to save the final video
 width, height = 640, 480  # Resize video to this resolution
