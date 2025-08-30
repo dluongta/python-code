@@ -4,6 +4,13 @@ import subprocess
 def hms_to_seconds(time_str):
     h, m, s = time_str.split(':')
     return int(h) * 3600 + int(m) * 60 + float(s)
+from moviepy.editor import VideoFileClip
+
+def get_video_length(video_path):
+    with VideoFileClip(video_path) as video:
+        duration = video.duration
+    return duration
+
 def cut_video_keep_quality(input_path, output_path, start_time, end_time):
     if isinstance(start_time, str):
         start_time_sec = hms_to_seconds(start_time)
@@ -53,16 +60,17 @@ cut_video_with_moviepy("input.mp4", "output_cut.mp4", 10, 60)
 """
 """
 cut_video_keep_quality(
-    input_path="video_with_audio.mp4",
+    input_path="video.mp4",
     output_path="output.mp4",
     start_time=0,
     end_time=600
 )
 """
+video_length = get_video_length("video_with_audio.mp4")
 cut_video_keep_quality(
-    input_path="video_with_audio.mp4",
+    input_path="video.mp4",
     output_path="output_cut.mp4",
     start_time="00:00:00",
-    end_time="00:10:00"
+    end_time=video_length
 )
 

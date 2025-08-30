@@ -24,8 +24,8 @@ def add_music_to_video(video_path, audio_path, output_path):
     video.write_videofile(output_path, codec='libx264', audio_codec='aac')
 
 # Đường dẫn đến video và âm thanh
-video_path = 'input.mp4'
-audio_path = 'sound.mp3'
+video_path = 'video.mp4'
+audio_path = 'audio.mp3'
 output_path = 'output_add_sound_video.mp4'
 
 # Chạy hàm

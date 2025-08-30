@@ -22,6 +22,6 @@ def insert_audio_to_video(video_path, audio_path, output_path):
     # Xuất video mới
     final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
 
-    print("✅ Video đã được chèn nhạc thành công.")
+    print("Video đã được chèn nhạc thành công.")
 
-insert_audio_to_video("v.webm", "RemixMusic.mp3", "video_with_audio.mp4")
+insert_audio_to_video("video.mp4", "audio.mp3", "video_with_audio.mp4")
