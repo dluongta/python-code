@@ -16,7 +16,7 @@ def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     bbox2 = draw.textbbox((0, 0), text2, font=font)
     total_w = (bbox1[2]-bbox1[0]) + (bbox2[2]-bbox2[0])
     x = (W - total_w) // 2
-    y = (H - (bbox1[3]-bbox1[1])) // 2
+    y = (H - (bbox1[3]-bbox1[1]) - fontsize*0.5) // 2
 
     draw.text((x, y), text1, font=font, fill=(139, 0, 0))   # đỏ sẫm
     draw.text((x+(bbox1[2]-bbox1[0]), y), text2, font=font, fill=(85, 85, 85))  # xám
@@ -31,7 +31,7 @@ def create_lumind_outline(fontsize, bg_color=(200, 0, 0)):
     text = "LUMIND"
     bbox = draw.textbbox((0, 0), text, font=font)
     x = (W - (bbox[2]-bbox[0])) // 2
-    y = (H - (bbox[3]-bbox[1])) // 2
+    y = (H - (bbox[3]-bbox[1]) - fontsize*0.5) // 2
 
     border = 12  # độ dày viền trắng
     for dx in range(-border, border+1):
@@ -86,7 +86,7 @@ def make_final_logo_with_subtitle():
         return mask[:, :, None]
 
     subtitle = subtitle_static.set_mask(VideoClip(pixel_mask, duration=3).to_mask())
-    subtitle = subtitle.set_position(("center", H//2+120))
+    subtitle = subtitle.set_position(("center", H//2+80))
     return CompositeVideoClip([bg, logo_clip, subtitle])
 
 # ===== Ghép toàn bộ =====
@@ -95,7 +95,7 @@ def create_full_intro():
     stage2 = make_flash_white()
     stage3 = make_final_logo_with_subtitle()
     final = concatenate_videoclips([stage1, stage2, stage3])
-    final.write_videofile("lumind_intro.mp4", fps=30)
+    final.write_videofile("lumind_intro.mp4", fps=120)
 
 if __name__ == "__main__":
     create_full_intro()
