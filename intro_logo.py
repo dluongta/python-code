@@ -23,7 +23,7 @@ def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     return np.array(img)
 
 # ===== Vẽ chữ đỏ có viền trắng trên nền đỏ =====
-def create_lumind_outline(fontsize, bg_color=(200, 0, 0)):
+def create_lumind_outline(fontsize, bg_color=(139, 0, 0)):
     img = Image.new("RGB", (W, H), bg_color)  # nền đỏ
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(FONT_PATH, fontsize)
@@ -40,7 +40,7 @@ def create_lumind_outline(fontsize, bg_color=(200, 0, 0)):
                 draw.text((x+dx, y+dy), text, font=font, fill=(255, 255, 255))
 
     # Vẽ chữ đỏ bên trong
-    draw.text((x, y), text, font=font, fill=(200, 0, 0))
+    draw.text((x, y), text, font=font, fill=(139, 0, 0))
     return np.array(img)
 
 # ===== Stage 1: Logo phóng to dần =====
