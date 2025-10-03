@@ -76,14 +76,16 @@ def get_letter_strokes(x_offset):
     x += size + spacing
 
     # M
+    m_width = size + 20  # tăng chiều rộng chữ M
+
     letters['M'] = [
-        make_stroke_line((x, y + size), (x, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),
-        make_stroke_line((x, y - size), (x + size // 2, y), DRAW_COLOR_GRAY, FRAME_DELAY),
-        make_stroke_line((x + size // 2, y), (x + size, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),
-        make_stroke_line((x + size, y - size), (x + size, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),
+        make_stroke_line((x, y + size), (x, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),                         # Nét dọc trái
+        make_stroke_line((x, y - size), (x + m_width // 2, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),         # Nét chéo trái
+        make_stroke_line((x + m_width // 2, y + size), (x + m_width, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),  # Nét chéo phải xuống chân
+        make_stroke_line((x + m_width, y - size), (x + m_width, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),     # Nét dọc phải
     ]
 
-    x += size + spacing
+    x += m_width + spacing  # cập nhật x đúng với độ rộng mới
 
     # I
     letters['I'] = [
