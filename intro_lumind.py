@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 
 # ========== CẤU HÌNH ==========
-WIDTH, HEIGHT = 1280, 720
+WIDTH, HEIGHT = 1280, 720  # Độ phân giải HD
 BG_COLOR = (255, 255, 255)
 DRAW_COLOR_RED = (0, 0, 160)   # Màu đỏ đậm cho "LU"
 DRAW_COLOR_GRAY = (50, 50, 50)  # Màu xám cho "MIND"
-LINE_THICKNESS = 5
+LINE_THICKNESS = 8             # Tăng độ dày nét để nét rõ hơn ở HD
 FRAME_DELAY = 15
 CURVE_FRAME_DELAY = 0.5
 END_HOLD_FRAMES = 30
@@ -49,9 +49,10 @@ class Stroke:
 # ========== HÀM TẠO NÉT CHỮ ==========
 def get_letter_strokes(x_offset):
     letters = {}
-    y = 150
-    size = 60
-    spacing = 30
+    size = 100              # Tăng size chữ cho HD
+    spacing = 50            # Tăng khoảng cách giữa chữ
+    y = HEIGHT // 2        # Căn giữa theo chiều dọc
+
     x = x_offset
 
     def make_stroke_line(pt1, pt2, color, delay):
@@ -65,7 +66,7 @@ def get_letter_strokes(x_offset):
 
     x += size + spacing
 
-    # U (sửa lại để không thừa đoạn ngắn)
+    # U
     letters['U'] = [
         make_stroke_line((x, y - size), (x, y + size), DRAW_COLOR_RED, FRAME_DELAY),
         make_stroke_line((x, y + size), (x + size, y + size), DRAW_COLOR_RED, FRAME_DELAY),
@@ -84,7 +85,7 @@ def get_letter_strokes(x_offset):
 
     x += size + spacing
 
-    # I (chỉ nét thẳng dọc, tránh thừa đoạn)
+    # I
     letters['I'] = [
         make_stroke_line((x + size // 2, y - size), (x + size // 2, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),
     ]
@@ -102,7 +103,7 @@ def get_letter_strokes(x_offset):
 
     # D
     vertical_line = [(x, y - size), (x, y + size)]
-    arc_pts = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 10)
+    arc_pts = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 15)
     arc_points = [tuple(pt) for pt in arc_pts]
     curve_stroke = Stroke(arc_points, DRAW_COLOR_GRAY, CURVE_FRAME_DELAY)
     vertical_stroke = Stroke(vertical_line, DRAW_COLOR_GRAY, FRAME_DELAY)
@@ -112,8 +113,8 @@ def get_letter_strokes(x_offset):
 
 # ========== TÍNH TOÁN CĂN GIỮA ==========
 def calculate_center_offset():
-    size = 60
-    spacing = 30
+    size = 100
+    spacing = 50
     total_width = 6 * size + 5 * spacing
     return (WIDTH - total_width) // 2
 
@@ -150,4 +151,4 @@ for f in frames:
     out.write(f)
 out.release()
 
-print(f"✅ Video đã được tạo: {VIDEO_NAME}")
+print(f"Video đã được tạo: {VIDEO_NAME}")
