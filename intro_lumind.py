@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # ========== CẤU HÌNH ==========
-WIDTH, HEIGHT = 800, 300
+WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
 DRAW_COLOR_RED = (0, 0, 160)   # Màu đỏ đậm cho "LU"
 DRAW_COLOR_GRAY = (50, 50, 50)  # Màu xám cho "MIND"
