@@ -6,7 +6,7 @@ EFFECT_DURATION = 0.3  # Duration of the transition effect
 CLIP_DURATION = 3.3    # Duration of each video clip
 
 # Load video clips and resize them to match the screen resolution (1280x720)
-video1 = VideoFileClip("video3.mp4").set_duration(CLIP_DURATION).resize((1280, 720))
+video1 = VideoFileClip("video1.mp4").set_duration(CLIP_DURATION).resize((1280, 720))
 video2 = VideoFileClip("video2.mp4").set_duration(CLIP_DURATION).resize((1280, 720))
 video1_1 = video1.subclip(CLIP_DURATION, CLIP_DURATION * 2).resize((1280, 720))
 
