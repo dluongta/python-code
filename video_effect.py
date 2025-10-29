@@ -27,7 +27,6 @@ radius_step = 8        # tốc độ lan tỏa mỗi frame
 circle_color = (255, 255, 255)  # BGR
 thickness = 4          # độ dày viền tròn
 
-# --- Xác định tâm ngực (chỉ 1 lần, trên frame đầu) ---
 ret, frame = cap.read()
 if not ret:
     print("Không đọc được video!")
@@ -48,10 +47,8 @@ y_bottom = int(np.max(ys))
 y_chest = int(y_top + 0.4 * (y_bottom - y_top))
 center = (x_center, y_chest)
 
-# Reset tới frame 0
 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-# --- Bán kính hiện tại (tăng dần rồi DỪNG) ---
 current_radius = 0
 radius_growing = True
 
@@ -60,7 +57,6 @@ while True:
     if not ret:
         break
 
-    # --- Phân đoạn người cho frame hiện tại ---
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = segment.process(frame_rgb)
     mask_person = (result.segmentation_mask > 0.3).astype(np.uint8) * 255
