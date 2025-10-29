@@ -25,7 +25,7 @@ out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width,
 max_radius = 2000       # bán kính lớn nhất
 radius_step = 8        # tốc độ lan tỏa mỗi frame
 circle_color = (255, 255, 255)  # BGR
-thickness = 4          # độ dày viền tròn
+thickness = 10          # độ dày viền tròn
 
 ret, frame = cap.read()
 if not ret:
