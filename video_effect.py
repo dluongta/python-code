@@ -49,7 +49,7 @@ center = (x_center, y_chest)
 
 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-current_radius = 880
+current_radius = 80
 radius_growing = True
 
 while True:
