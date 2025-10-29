@@ -49,7 +49,7 @@ center = (x_center, y_chest)
 
 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-current_radius = 0
+current_radius = 880
 radius_growing = True
 
 while True:
@@ -63,7 +63,7 @@ while True:
 
     # --- Tạo mặt nạ cho viền tròn tại bán kính hiện tại ---
     circle_mask = np.zeros((height, width), dtype=np.uint8)
-    # Vẽ viền tròn (anti-aliased)
+    # Vẽ viền tròn
     cv2.circle(circle_mask, center, int(round(current_radius)), 255, thickness, lineType=cv2.LINE_AA)
 
     # --- CHỈ giữ phần viền nằm trên người tại frame này ---
