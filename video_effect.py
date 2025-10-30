@@ -68,7 +68,7 @@ while True:
     num_points = 720
     amplitude = 25
     smoothness = 8
-    phase = int(cap.get(cv2.CAP_PROP_POS_FRAMES)) * 0.25  # tốc độ chuyển động điện
+    phase = 0  # tốc độ chuyển động điện
 
     angles = np.linspace(0, 2 * np.pi, num_points)
     radii = np.zeros_like(angles)
