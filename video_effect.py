@@ -119,4 +119,4 @@ while True:
 cap.release()
 out.release()
 segment.close()
-print("🔥 Video đã lưu:", output_path)
+print("🔥 Video đã lưu:", output_path) 
