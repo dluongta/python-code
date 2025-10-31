@@ -23,7 +23,7 @@ out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width,
 
 # --- Cấu hình viền tròn ---
 max_radius = 2000       # bán kính lớn nhất
-radius_step = 8         # tốc độ lan tỏa mỗi frame
+radius_step = 40        # tốc độ lan tỏa mỗi frame
 circle_color = (0, 140, 255)  # màu cam BGR
 thickness = 8           # độ dày viền
 
@@ -45,7 +45,7 @@ if len(xs) == 0 or len(ys) == 0:
 x_center = int(np.mean(xs))
 y_top = int(np.min(ys))
 y_bottom = int(np.max(ys))
-y_chest = int(y_top + 0.4 * (y_bottom - y_top))
+y_chest = int(y_top + 0.5 * (y_bottom - y_top))
 center = (x_center, y_chest)
 
 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -63,28 +63,42 @@ while True:
     result = segment.process(frame_rgb)
     mask_person = (result.segmentation_mask > 0.3).astype(np.uint8) * 255
 
-    # --- Tạo viền "điện giật" ---
-    circle_mask = np.zeros((height, width), dtype=np.uint8)
-    num_points = 720
-    amplitude = 25
-    smoothness = 8
-    phase = 0  # tốc độ chuyển động điện
+    # --- Tạo viền "điện giật" hình chữ nhật dọc ---
+    rect_mask = np.zeros((height, width), dtype=np.uint8)
 
-    angles = np.linspace(0, 2 * np.pi, num_points)
-    radii = np.zeros_like(angles)
+    # Kích thước cơ bản của khung điện giật
+    rect_width = int(20000)   # điều chỉnh tỷ lệ chiều ngang
+    rect_height = int(current_radius * 1.6)  # điều chỉnh tỷ lệ chiều dọc
 
-    for i, a in enumerate(angles):
-        noise = np.sin(a * smoothness + phase) + np.random.uniform(-1, 1) * 0.3
-        radii[i] = current_radius + amplitude * noise
+    # Tạo mép chữ nhật (4 cạnh)
+    amplitude = 15      # độ rung điện
+    smoothness = 20     # mật độ dao động cạnh
+    phase = cv2.getTickCount() / cv2.getTickFrequency() * 4.0
 
-    xs = (center[0] + radii * np.cos(angles)).astype(np.int32)
-    ys = (center[1] + radii * np.sin(angles)).astype(np.int32)
-    pts = np.stack((xs, ys), axis=1).reshape((-1, 1, 2))
+    # Tạo cạnh trên & dưới
+    x = np.linspace(-rect_width // 2, rect_width // 2, 200)
+    noise_top = np.sin(x / 10 + phase) * amplitude + np.random.uniform(-5, 5, size=x.shape)
+    noise_bottom = np.sin(x / 8 + phase + np.pi) * amplitude + np.random.uniform(-5, 5, size=x.shape)
 
-    cv2.polylines(circle_mask, [pts], isClosed=True, color=255, thickness=thickness, lineType=cv2.LINE_AA)
+    top_pts = np.stack((center[0] + x, center[1] - rect_height // 2 + noise_top), axis=1).astype(np.int32)
+    bottom_pts = np.stack((center[0] + x, center[1] + rect_height // 2 + noise_bottom), axis=1).astype(np.int32)
+
+    # Tạo cạnh trái & phải
+    y = np.linspace(-rect_height // 2, rect_height // 2, 200)
+    noise_left = np.sin(y / 12 + phase) * amplitude + np.random.uniform(-5, 5, size=y.shape)
+    noise_right = np.sin(y / 9 + phase + np.pi / 2) * amplitude + np.random.uniform(-5, 5, size=y.shape)
+
+    left_pts = np.stack((center[0] - rect_width // 2 + noise_left, center[1] + y), axis=1).astype(np.int32)
+    right_pts = np.stack((center[0] + rect_width // 2 + noise_right, center[1] + y), axis=1).astype(np.int32)
+
+    # Gộp 4 cạnh lại thành khung điện
+    pts = np.concatenate([top_pts, right_pts, bottom_pts[::-1], left_pts[::-1]]).reshape((-1, 1, 2))
+
+    # Vẽ viền điện giật
+    cv2.polylines(rect_mask, [pts], isClosed=True, color=255, thickness=thickness, lineType=cv2.LINE_AA)
 
     # --- Giữ phần viền trên người ---
-    visible_ring = cv2.bitwise_and(circle_mask, mask_person)
+    visible_ring = cv2.bitwise_and(rect_mask, mask_person)
 
     # --- Áp màu viền chính ---
     frame_out = frame.copy()
