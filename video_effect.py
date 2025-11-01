@@ -133,4 +133,25 @@ while True:
 cap.release()
 out.release()
 segment.close()
+
+# --- Ghép lại âm thanh gốc bằng ffmpeg ---
+import subprocess
+
+final_output = "output_effect_with_audio.mp4"
+
+cmd = [
+    "ffmpeg",
+    "-y",
+    "-i", output_path,        # video đã xử lý (không có tiếng)
+    "-i", input_path,         # video gốc (có tiếng)
+    "-c:v", "copy",           # giữ nguyên video đã xử lý
+    "-c:a", "aac",            # copy âm thanh AAC
+    "-map", "0:v:0",          # lấy video từ file 0
+    "-map", "1:a:0",          # lấy audio từ file 1
+    final_output
+]
+subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+print("🎧 Video có âm thanh đã lưu:", final_output)
+
 print("🔥 Video đã lưu:", output_path)
