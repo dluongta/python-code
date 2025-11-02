@@ -12,7 +12,7 @@ X, Y = np.meshgrid(x, y)
 # Định nghĩa 3 màu (RGB)
 left_color = np.array([200, 150, 255])   # tím hồng bên trái
 center_color = np.array([255, 180, 100]) # cam ở giữa
-right_color = np.array([255, 160, 220])  # hồng nhạt bên phải
+right_color = np.array([200, 150, 255])  # tím hồng bên phải
 
 # Tạo gradient 3 vùng:
 # - 0 → 0.5: tím hồng → cam
