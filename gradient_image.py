@@ -16,7 +16,7 @@ right_color = np.array([200, 150, 255])  # tím hồng bên phải
 
 # Tạo gradient 3 vùng:
 # - 0 → 0.5: tím hồng → cam
-# - 0.5 → 1: cam → hồng
+# - 0.5 → 1: cam → tím hồng
 gradient = np.zeros((height, width, 3), dtype=np.float32)
 
 # Vùng bên trái đến giữa
