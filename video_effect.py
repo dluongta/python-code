@@ -63,7 +63,6 @@ while True:
     current_time_ms = cap.get(cv2.CAP_PROP_POS_MSEC)
     current_time_sec = current_time_ms / 1000.0
 
-    # --- if current_time_sec < 4.0: ---
     video_duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / fps
     start_time = video_duration / 2
     if current_time_sec < start_time:
