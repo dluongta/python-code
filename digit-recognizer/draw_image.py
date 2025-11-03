@@ -1,21 +1,18 @@
+import os
 import tkinter as tk
 from PIL import Image, ImageDraw
 from tkinter import filedialog
-import cv2
-import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
 
 class HandwritingApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Handwriting Digit Drawer")
-        
+
         self.canvas_size = 280
         self.canvas = tk.Canvas(master, width=self.canvas_size, height=self.canvas_size, bg='white')
         self.canvas.pack()
 
-        # Create a white image for drawing
+        # Tạo ảnh trắng để vẽ
         self.image = Image.new('L', (self.canvas_size, self.canvas_size), color='white')
         self.draw = ImageDraw.Draw(self.image)
 
@@ -23,14 +20,13 @@ class HandwritingApp:
         self.canvas.bind("<B1-Motion>", self.paint)
         self.canvas.bind("<ButtonRelease-1>", self.reset)
 
+        # Nút Clear
         self.clear_button = tk.Button(master, text='Clear', command=self.clear_canvas)
         self.clear_button.pack()
 
-        self.save_button = tk.Button(master, text='Save & Predict', command=self.save_and_predict)
+        # Nút Save (chỉ lưu ảnh)
+        self.save_button = tk.Button(master, text='Save Image', command=self.save_image)
         self.save_button.pack()
-
-        # Load the trained model
-        self.model = tf.keras.models.load_model('handwritten_digits.model')
 
     def paint(self, event):
         x, y = event.x, event.y
@@ -44,34 +40,21 @@ class HandwritingApp:
         self.last_x, self.last_y = None, None
 
     def clear_canvas(self):
+        """Xóa toàn bộ nội dung trên canvas"""
         self.canvas.delete("all")
         self.draw.rectangle([0, 0, self.canvas_size, self.canvas_size], fill='white')
 
-    def save_and_predict(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
+    def save_image(self):
+        """Lưu ảnh vào file PNG"""
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png")],
+            title="Save drawn digit"
+        )
         if file_path:
             self.image.save(file_path)
-            print(f"Image saved to {file_path}")
-            self.predict_digit(file_path)
-
-    def predict_digit(self, img_path):
-        # Read the saved image and process it
-        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-        img_resized = cv2.resize(img, (28, 28))
-        img_inverted = np.invert(np.array([img_resized]))  # Invert colors
-
-        # Predict the digit
-        prediction = self.model.predict(img_inverted)
-        predicted_digit = np.argmax(prediction)
-
-        # Display prediction
-        print(f"Predicted Digit: {predicted_digit}")
-
-        # Optional: Show the image with prediction
-        plt.imshow(img_inverted[0], cmap=plt.cm.binary)
-        plt.title(f'Predicted: {predicted_digit}')
-        plt.axis('off')
-        plt.show()
+            print(f"Ảnh đã được lưu tại: {file_path}")
+            os.startfile(file_path)
 
 if __name__ == "__main__":
     root = tk.Tk()
