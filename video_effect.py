@@ -130,7 +130,7 @@ while True:
     glow_colored = cv2.bitwise_and(glow_colored, mask_glow)
 
     # Tăng cường độ sáng tổng thể
-    frame_out = cv2.addWeighted(frame_out, 1.0, glow_colored, 0.9, 15)
+    frame_out = cv2.addWeighted(frame_out, 1.0, glow_colored, 0.6, 0)
 
     out.write(frame_out)
 
