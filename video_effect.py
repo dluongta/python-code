@@ -59,6 +59,19 @@ while True:
     if not ret:
         break
 
+    # --- Tính thời gian hiện tại của video (ms) ---
+    current_time_ms = cap.get(cv2.CAP_PROP_POS_MSEC)
+    current_time_sec = current_time_ms / 1000.0
+
+    # --- Bắt đầu hiệu ứng từ giây thứ 4 ---
+    # --- if current_time_sec < 4.0: ---
+    video_duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / fps
+    start_time = video_duration / 2
+    if current_time_sec < start_time:
+        out.write(frame)
+        continue
+
+
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = segment.process(frame_rgb)
     mask_person = (result.segmentation_mask > 0.3).astype(np.uint8) * 255
