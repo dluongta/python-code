@@ -63,7 +63,7 @@ def make_final_logo_with_subtitle():
     text_full = "LUONG MIND"
     text_LU = "LU"
     text_ONG = "ONG"
-    text_MIND = " MIND"  
+    text_MIND = "MIND"  
 
     img_temp = Image.new("RGB", (W, H), (255, 255, 255))
     draw_temp = ImageDraw.Draw(img_temp)
@@ -82,7 +82,7 @@ def make_final_logo_with_subtitle():
         return ImageClip(np.array(img)).set_duration(4).set_position((offset_x,0))
 
     LU_clip = text_clip(text_LU, (139,0,0), int(w_LU), start_x)
-    ONG_clip = text_clip(text_ONG, (85,85,85), int(w_ONG), start_x + w_LU)
+    ONG_clip = text_clip(text_ONG, (139,0,0), int(w_ONG), start_x + w_LU)
     MIND_clip = text_clip(text_MIND, (85,85,85), int(w_MIND), start_x + w_LU + w_ONG)
 
     def mask_ong(t):
