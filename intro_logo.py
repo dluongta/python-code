@@ -72,7 +72,7 @@ def make_final_logo_with_subtitle():
     w_MIND = draw_temp.textlength(text_MIND, font=font)
     total_w = w_LU + w_ONG + w_MIND
 
-    start_x = (W - total_w) // 2 -  120
+    start_x = (W - total_w) // 2 -  130
     y_pos = (H - font_size) // 2 -20
 
     def text_clip(text, color, width, offset_x):
@@ -132,7 +132,7 @@ def make_final_logo_with_subtitle():
         return mask[:, :, None]
 
     subtitle = subtitle_static.set_mask(VideoClip(subtitle_mask, duration=4).to_mask())
-    subtitle = subtitle.set_position(("center", H // 2 + 90))
+    subtitle = subtitle.set_position(("center", H // 2 + 50))
 
     final = CompositeVideoClip([bg, LU_moving, ONG_masked, MIND_clip, subtitle])
     return final
