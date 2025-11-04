@@ -5,7 +5,6 @@ import numpy as np
 W, H = 1280, 720
 FONT_PATH = "C:/Windows/Fonts/arial.ttf"
 
-# ===== Vẽ chữ thường (LU đỏ, MIND xám) =====
 def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     img = Image.new("RGB", (W, H), bg_color)
     draw = ImageDraw.Draw(img)
@@ -18,13 +17,12 @@ def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     x = (W - total_w) // 2
     y = (H - (bbox1[3]-bbox1[1]) - fontsize*0.5) // 2
 
-    draw.text((x, y), text1, font=font, fill=(139, 0, 0))   # đỏ sẫm
-    draw.text((x+(bbox1[2]-bbox1[0]), y), text2, font=font, fill=(85, 85, 85))  # xám
+    draw.text((x, y), text1, font=font, fill=(139, 0, 0))   
+    draw.text((x+(bbox1[2]-bbox1[0]), y), text2, font=font, fill=(85, 85, 85))  
     return np.array(img)
 
-# ===== Vẽ chữ đỏ có viền trắng trên nền đỏ =====
 def create_lumind_outline(fontsize, bg_color=(139, 0, 0)):
-    img = Image.new("RGB", (W, H), bg_color)  # nền đỏ
+    img = Image.new("RGB", (W, H), bg_color)  
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(FONT_PATH, fontsize)
 
@@ -33,13 +31,12 @@ def create_lumind_outline(fontsize, bg_color=(139, 0, 0)):
     x = (W - (bbox[2]-bbox[0])) // 2
     y = (H - (bbox[3]-bbox[1]) - fontsize*0.5) // 2
 
-    border = 12  # độ dày viền trắng
+    border = 12  
     for dx in range(-border, border+1):
         for dy in range(-border, border+1):
             if dx*dx + dy*dy <= border*border:
                 draw.text((x+dx, y+dy), text, font=font, fill=(255, 255, 255))
 
-    # Vẽ chữ đỏ bên trong
     draw.text((x, y), text, font=font, fill=(139, 0, 0))
     return np.array(img)
 
@@ -50,9 +47,9 @@ def make_scale_sequence():
     for s in scales:
         fontsize = int(120 * s)
         if s == 2.2:
-            img = create_lumind_outline(fontsize)  # chữ đỏ viền trắng trên nền đỏ
+            img = create_lumind_outline(fontsize)  
         else:
-            img = create_lumind_image(fontsize)    # chữ thường
+            img = create_lumind_image(fontsize)    
         clips.append(ImageClip(img).set_duration(0.6))
     return concatenate_videoclips(clips)
 
