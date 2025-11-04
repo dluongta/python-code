@@ -5,7 +5,6 @@ import numpy as np
 W, H = 1280, 720
 FONT_PATH = "C:/Windows/Fonts/arial.ttf"
 
-# ===== Vẽ chữ thường (LU đỏ, MIND xám) =====
 def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     img = Image.new("RGB", (W, H), bg_color)
     draw = ImageDraw.Draw(img)
@@ -18,13 +17,12 @@ def create_lumind_image(fontsize, bg_color=(255, 255, 255)):
     x = (W - total_w) // 2
     y = (H - (bbox1[3]-bbox1[1]) - fontsize*0.5) // 2
 
-    draw.text((x, y), text1, font=font, fill=(139, 0, 0))   # đỏ sẫm
-    draw.text((x+(bbox1[2]-bbox1[0]), y), text2, font=font, fill=(85, 85, 85))  # xám
+    draw.text((x, y), text1, font=font, fill=(139, 0, 0))  
+    draw.text((x+(bbox1[2]-bbox1[0]), y), text2, font=font, fill=(85, 85, 85))  
     return np.array(img)
 
-# ===== Vẽ chữ đỏ có viền trắng trên nền đỏ =====
 def create_lumind_outline(fontsize, bg_color=(139, 0, 0)):
-    img = Image.new("RGB", (W, H), bg_color)  # nền đỏ
+    img = Image.new("RGB", (W, H), bg_color)  
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(FONT_PATH, fontsize)
 
@@ -33,30 +31,27 @@ def create_lumind_outline(fontsize, bg_color=(139, 0, 0)):
     x = (W - (bbox[2]-bbox[0])) // 2
     y = (H - (bbox[3]-bbox[1]) - fontsize*0.5) // 2
 
-    border = 12  # độ dày viền trắng
+    border = 12  
     for dx in range(-border, border+1):
         for dy in range(-border, border+1):
             if dx*dx + dy*dy <= border*border:
                 draw.text((x+dx, y+dy), text, font=font, fill=(255, 255, 255))
 
-    # Vẽ chữ đỏ bên trong
     draw.text((x, y), text, font=font, fill=(139, 0, 0))
     return np.array(img)
 
-# ===== Stage 1: Logo phóng to dần =====
 def make_scale_sequence():
     scales = [1.0, 1.3, 1.6, 1.9, 2.2]
     clips = []
     for s in scales:
         fontsize = int(120 * s)
         if s == 2.2:
-            img = create_lumind_outline(fontsize)  # chữ đỏ viền trắng trên nền đỏ
+            img = create_lumind_outline(fontsize) 
         else:
-            img = create_lumind_image(fontsize)    # chữ thường
+            img = create_lumind_image(fontsize)  
         clips.append(ImageClip(img).set_duration(0.6))
     return concatenate_videoclips(clips)
 
-# ===== Stage 2: Flash trắng =====
 def make_flash_white():
     return ColorClip(size=(W, H), color=(255, 255, 255), duration=0.5)
 
@@ -68,7 +63,7 @@ def make_final_logo_with_subtitle():
     text_full = "LUONG MIND"
     text_LU = "LU"
     text_ONG = "ONG"
-    text_MIND = " MIND"  # thêm khoảng trắng để tách đúng
+    text_MIND = " MIND"  
 
     img_temp = Image.new("RGB", (W, H), (255, 255, 255))
     draw_temp = ImageDraw.Draw(img_temp)
@@ -80,7 +75,6 @@ def make_final_logo_with_subtitle():
     start_x = (W - total_w) // 2 -  120
     y_pos = (H - font_size) // 2 -20
 
-    # Tạo các clip riêng
     def text_clip(text, color, width, offset_x):
         img = Image.new("RGB", (width, H), (255, 255, 255))
         draw = ImageDraw.Draw(img)
@@ -91,7 +85,6 @@ def make_final_logo_with_subtitle():
     ONG_clip = text_clip(text_ONG, (85,85,85), int(w_ONG), start_x + w_LU)
     MIND_clip = text_clip(text_MIND, (85,85,85), int(w_MIND), start_x + w_LU + w_ONG)
 
-    # Mask ẩn dần chữ ONG
     def mask_ong(t):
         mask = np.ones((H, int(w_ONG)), dtype=np.uint8) * 255
         if 1 <= t <= 2:
@@ -104,7 +97,6 @@ def make_final_logo_with_subtitle():
 
     ONG_masked = ONG_clip.set_mask(VideoClip(mask_ong, duration=4).to_mask())
 
-    # Dịch chuyển chữ LU khi ONG ẩn
     def LU_pos(t):
         factor = 1
         if t < 1:
@@ -118,7 +110,6 @@ def make_final_logo_with_subtitle():
 
     LU_moving = LU_clip.set_position(LU_pos)
 
-    # Tạo phụ đề (giữ nguyên)
     def subtitle_img():
         img = Image.new("RGB", (W, 100), (255, 255, 255))
         draw = ImageDraw.Draw(img)
@@ -148,7 +139,6 @@ def make_final_logo_with_subtitle():
 
 
 
-# ===== Ghép toàn bộ =====
 def create_full_intro():
     stage1 = make_scale_sequence()
     stage2 = make_flash_white()
