@@ -10,7 +10,7 @@ RECT_COLOR = (200, 200, 200)  # Màu rectangle
 BG_COLOR = (255, 255, 255)    # Nền trắng
 TEXT_COLOR = (0, 0, 0)        # Chữ đen
 ANIM_DURATION = 5             # thời gian animation rectangle
-PAUSE_DURATION = 2            # thời gian giữ cuối
+PAUSE_DURATION = 0.5            # thời gian giữ cuối
 TOTAL_DURATION = ANIM_DURATION + PAUSE_DURATION
 
 # --- Tạo hình chữ ---
