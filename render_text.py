@@ -1,67 +1,61 @@
 import cv2
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
-# Thông số video
 width, height = 800, 400
 fps = 30
-duration = 6          
-anim_ratio = 0.8       
-anim_frames = int(fps * duration * anim_ratio)
+duration = 8
+anim_ratio = 0.6
+delay_ratio = 0.1
+delay_frames = int(fps * duration * delay_ratio)
+anim_frames = int(fps * duration * (anim_ratio - delay_ratio))
 hold_frames = int(fps * duration * (1 - anim_ratio))
-frames = anim_frames + hold_frames
+frames = delay_frames + anim_frames + hold_frames
 
-# Màu sắc (BGR)
 white = (255, 255, 255)
-dark_red = (0, 0, 139)   # đỏ sẫm
+dark_red = (0, 0, 139)
 gray = (128, 128, 128)
 
-# Khởi tạo video writer
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter('lumind_animation.mp4', fourcc, fps, (width, height))
 
-# Cấu hình chữ
-font = cv2.FONT_HERSHEY_SIMPLEX
-font_scale = 4
-thickness = 8
+font_path = "C:/Windows/Fonts/arial.ttf"
+font_size = 140
+font = ImageFont.truetype(font_path, font_size)
 
-# Tính vị trí trung tâm chữ
-text1 = "LU"
-text2 = "MIND"
-size1 = cv2.getTextSize(text1, font, font_scale, thickness)[0]
-size2 = cv2.getTextSize(text2, font, font_scale, thickness)[0]
+text1, text2 = "LU", "MIND"
+dummy = Image.new("RGB", (width, height), (255, 255, 255))
+d = ImageDraw.Draw(dummy)
+b1, b2 = d.textbbox((0, 0), text1, font=font), d.textbbox((0, 0), text2, font=font)
+w1, h1 = b1[2]-b1[0], b1[3]-b1[1]
+w2, h2 = b2[2]-b2[0], b2[3]-b2[1]
 gap = 10
-total_width = size1[0] + gap + size2[0]
-x0 = (width - total_width) // 2
-y0 = height // 2 + size1[1] // 2
-
-rect_max_height = size1[1] + 36
-start_y_top = y0 - size1[1] - 20 
+total = w1 + gap + w2
+x0 = (width - total) // 2
+y0 = height // 2 + h1 // 2
+rect_max_height = h1 + 46
+start_y_top = y0 - h1 - 20
 
 for i in range(frames):
-    img = np.full((height, width, 3), 255, np.uint8)
+    img = Image.new("RGB", (width, height), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    d.text((x0, y0 - h1), text1, font=font, fill=(dark_red[2], dark_red[1], dark_red[0]))
+    d.text((x0 + w1 + gap, y0 - h2), text2, font=font, fill=(gray[2], gray[1], gray[0]))
 
-    # Vẽ chữ
-    cv2.putText(img, text1, (x0, y0), font, font_scale, dark_red, thickness, cv2.LINE_AA)
-    cv2.putText(img, text2, (x0 + size1[0] + gap, y0), font, font_scale, gray, thickness, cv2.LINE_AA)
-
-    if i < anim_frames:
-        progress = i / anim_frames
+    if i < delay_frames:
+        progress = 0
+    elif i < delay_frames + anim_frames:
+        progress = (i - delay_frames) / anim_frames
     else:
-        progress = 1.0
+        progress = 1
 
     rect_height = int(rect_max_height * progress)
 
-    cv2.rectangle(img,
-                  (x0, start_y_top),
-                  (x0 + size1[0], start_y_top + rect_height),
-                  dark_red, -1)
+    if rect_height > 0: 
+        d.rectangle((x0, start_y_top, x0 + w1, start_y_top + rect_height), fill=(dark_red[2], dark_red[1], dark_red[0]))
+        d.rectangle((x0 + w1 + gap, start_y_top, x0 + w1 + gap + w2, start_y_top + rect_height), fill=(gray[2], gray[1], gray[0]))
 
-    cv2.rectangle(img,
-                  (x0 + size1[0] + gap, start_y_top),
-                  (x0 + size1[0] + gap + size2[0], start_y_top + rect_height),
-                  gray, -1)
-
-    out.write(img)
+    out.write(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
 
 out.release()
 print("Video 'lumind_animation.mp4' created")
