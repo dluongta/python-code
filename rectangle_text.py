@@ -5,49 +5,59 @@ import numpy as np
 # --- Cấu hình ---
 W, H = 1280, 720
 FONT_PATH = "C:/Windows/Fonts/arial.ttf"
-TEXT = "HELLO WORLD"
-RECT_COLOR = (200, 200, 200)  # Màu rectangle
-BG_COLOR = (255, 255, 255)    # Nền trắng
-TEXT_COLOR = (0, 0, 0)        # Chữ đen
-ANIM_DURATION = 5             # thời gian animation rectangle
-PAUSE_DURATION = 0.5            # thời gian giữ cuối
-TOTAL_DURATION = ANIM_DURATION + PAUSE_DURATION
+TEXT = "DLUONGTA - LUONG MIND"
 
-# --- Tạo hình chữ ---
+RECT_COLOR = (255, 255, 255)      # Hình chữ nhật màu trắng
+BG_COLOR = (139, 0, 0)            # Nền đỏ sẫm (dark red)
+TEXT_COLOR = (255, 165, 0)        # Chữ màu cam
+
+ANIM_DURATION = 5                 # Thời gian animation
+EXTRA_HOLD = 2                    # Giữ thêm sau khi hiện xong
+TOTAL_DURATION = ANIM_DURATION + EXTRA_HOLD
+
+# --- Tạo hình chữ và lấy vị trí ---
 def create_text_image():
     img = Image.new("RGB", (W, H), BG_COLOR)
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(FONT_PATH, 100)
+    font = ImageFont.truetype(FONT_PATH, 120)
     bbox = draw.textbbox((0, 0), TEXT, font=font)
-    w = bbox[2] - bbox[0]
-    h = bbox[3] - bbox[1]
-    draw.text(((W - w)//2, (H - h)//2), TEXT, font=font, fill=TEXT_COLOR)
-    return np.array(img)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    text_x = (W - text_w) // 2
+    text_y = (H - text_h) // 2
+    draw.text((text_x, text_y), TEXT, font=font, fill=TEXT_COLOR)
+    return np.array(img), (text_x, text_y, text_w, text_h)
 
-# --- Layer rectangle che chữ bằng mask ---
+# --- Tạo hình chữ ---
+text_img, (text_x, text_y, text_w, text_h) = create_text_image()
+
+# --- Mask động cho rectangle ---
 def rectangle_mask(t):
     """
-    Trả về mask 2D float [0,1], 0 = trong suốt, 1 = che
+    Mask 2D float [0,1], 0 = trong suốt, 1 = che.
+    Hình chữ nhật xuất hiện từ dưới lên che chữ (vượt quá chữ một chút).
     """
-    progress = min(t / ANIM_DURATION, 1)  # chỉ animate trong ANIM_DURATION
-    current_h = int(H/2 * (1 - progress))
+    progress = min(t / ANIM_DURATION, 1)
+    # Chiều cao chữ + margin để đi quá chữ một chút
+    total_h = text_h + 32  
+    visible_height = int(total_h * progress)
     mask = np.ones((H, W), dtype=float)
-    center_y = H // 2
-    mask[center_y - current_h:center_y + current_h, :] = 0
+    y2 = text_y + text_h + 40   # điểm đáy hơi vượt chữ
+    y1 = y2 - visible_height
+    mask[y1:y2, text_x:text_x + text_w] = 0
     return mask
 
-# --- VideoClip mask ---
+# --- Tạo mask clip ---
 mask_clip = VideoClip(make_frame=rectangle_mask, duration=TOTAL_DURATION)
-mask_clip = mask_clip.set_fps(30)
-mask_clip = mask_clip.set_ismask(True)
+mask_clip = mask_clip.set_fps(30).set_ismask(True)
 
-# --- Rectangle clip ---
-rect_clip = ColorClip(size=(W,H), color=RECT_COLOR, duration=TOTAL_DURATION)
+# --- Tạo rectangle clip ---
+rect_clip = ColorClip(size=(W, H), color=RECT_COLOR, duration=TOTAL_DURATION)
 rect_clip = rect_clip.set_mask(mask_clip)
 
-# --- Text clip ---
-text_clip = ImageClip(create_text_image()).set_duration(TOTAL_DURATION)
+# --- Tạo clip chữ ---
+text_clip = ImageClip(text_img).set_duration(TOTAL_DURATION)
 
-# --- Composite ---
+# --- Gộp lại ---
 final = CompositeVideoClip([text_clip, rect_clip])
 final.write_videofile("rectangle_text.mp4", fps=30)
