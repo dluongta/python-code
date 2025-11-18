@@ -7,7 +7,7 @@ mp_selfie_segmentation = mp.solutions.selfie_segmentation
 segment = mp_selfie_segmentation.SelfieSegmentation(model_selection=1)
 
 # --- Video input/output ---
-input_path = "video_sample.mp4"
+input_path = "output_video_with_music.mp4"
 output_path = "output_effect.mp4"
 
 cap = cv2.VideoCapture(input_path)
@@ -115,22 +115,30 @@ while True:
     frame_out = frame.copy()
     frame_out[visible_ring > 0] = circle_color
 
-    # --- Glow (phát sáng cam/đỏ mạnh) ---
-    glow = cv2.GaussianBlur(visible_ring, (0, 0), 10)
+    # --- Glow (phát sáng mạnh kiểu LED) ---
+    glow_base = visible_ring.copy()
 
-    # Tạo màu phát sáng đỏ–cam tùy chỉnh
-    glow_bgr = cv2.cvtColor(glow, cv2.COLOR_GRAY2BGR)
-    glow_colored = np.zeros_like(glow_bgr)
-    glow_colored[..., 2] = cv2.multiply(glow, 1.5)  
-    glow_colored[..., 1] = cv2.multiply(glow, 0.7)  
-    glow_colored[..., 0] = cv2.multiply(glow, 0.3)  
+    # 3 lớp bloom
+    glow1 = cv2.GaussianBlur(glow_base, (0, 0), 15)
+    glow2 = cv2.GaussianBlur(glow_base, (0, 0), 35)
+    glow3 = cv2.GaussianBlur(glow_base, (0, 0), 60)
 
-    # Giới hạn glow chỉ trong vùng người
-    mask_glow = cv2.cvtColor(visible_ring, cv2.COLOR_GRAY2BGR)
-    glow_colored = cv2.bitwise_and(glow_colored, mask_glow)
+    # Tô màu glow (đỏ–cam rực)
+    def colorize(mask, r, g, b):
+        c = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        c[..., 2] = mask * r
+        c[..., 1] = mask * g
+        c[..., 0] = mask * b
+        return c
 
-    # Tăng cường độ sáng tổng thể
-    frame_out = cv2.addWeighted(frame_out, 1.0, glow_colored, 0.6, 0)
+    glow1 = colorize(glow1, 1.0, 0.5, 0.2)
+    glow2 = colorize(glow2, 1.3, 0.4, 0.1)
+    glow3 = colorize(glow3, 1.6, 0.3, 0.0)
+
+    # Tăng cường – blend từng lớp
+    frame_out = cv2.addWeighted(frame_out, 1.0, glow1, 0.6, 0)
+    frame_out = cv2.addWeighted(frame_out, 1.0, glow2, 0.5, 0)
+    frame_out = cv2.addWeighted(frame_out, 1.0, glow3, 0.45, 0)
 
     out.write(frame_out)
 
