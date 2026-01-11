@@ -2,16 +2,16 @@ import cv2
 import numpy as np
 
 # ========== CẤU HÌNH ==========
-WIDTH, HEIGHT = 1280, 720  # Độ phân giải HD
+WIDTH, HEIGHT = 1280, 720
 BG_COLOR = (255, 255, 255)
-DRAW_COLOR_RED = (0, 0, 160)   # Màu đỏ đậm cho "LU"
-DRAW_COLOR_GRAY = (50, 50, 50)  # Màu xám cho "MIND"
-LINE_THICKNESS = 8             # Tăng độ dày nét để nét rõ hơn ở HD
+DRAW_COLOR_RED = (0, 0, 160)     # U L
+DRAW_COLOR_GRAY = (50, 50, 50)   # MIND
+LINE_THICKNESS = 8
 FRAME_DELAY = 15
-CURVE_FRAME_DELAY = 0.5
+CURVE_FRAME_DELAY = 1
 END_HOLD_FRAMES = 30
 FPS = 10
-VIDEO_NAME = "lumind_logo.mp4"
+VIDEO_NAME = "ulmind_logo.mp4"
 
 # ========== LỚP NÉT VẼ ==========
 class Stroke:
@@ -40,101 +40,93 @@ class Stroke:
             if self.current_segment >= len(self.points) - 1:
                 self.done = True
             return
+
         alpha = t / self.delay
         x = int(pt1[0] * (1 - alpha) + pt2[0] * alpha)
         y = int(pt1[1] * (1 - alpha) + pt2[1] * alpha)
         cv2.line(canvas, pt1, (x, y), self.color, LINE_THICKNESS)
         self.current_step += 1
 
-# ========== HÀM TẠO NÉT CHỮ ==========
+# ========== TẠO CHỮ ==========
 def get_letter_strokes(x_offset):
     letters = {}
-    size = 100              # Tăng size chữ cho HD
-    spacing = 50            # Tăng khoảng cách giữa chữ
-    y = HEIGHT // 2        # Căn giữa theo chiều dọc
-
+    size = 100
+    spacing = 50
+    y = HEIGHT // 2
     x = x_offset
 
-    def make_stroke_line(pt1, pt2, color, delay):
-        return Stroke([pt1, pt2], color, delay)
-
-    # L
-    letters['L'] = [
-        make_stroke_line((x, y - size), (x, y + size), DRAW_COLOR_RED, FRAME_DELAY),
-        make_stroke_line((x, y + size), (x + size, y + size), DRAW_COLOR_RED, FRAME_DELAY),
-    ]
-
-    x += size + spacing
+    def line(p1, p2, color):
+        return Stroke([p1, p2], color, FRAME_DELAY)
 
     # U
     letters['U'] = [
-        make_stroke_line((x, y - size), (x, y + size), DRAW_COLOR_RED, FRAME_DELAY),
-        make_stroke_line((x, y + size), (x + size, y + size), DRAW_COLOR_RED, FRAME_DELAY),
-        make_stroke_line((x + size, y + size), (x + size, y - size), DRAW_COLOR_RED, FRAME_DELAY),
+        line((x, y - size), (x, y + size), DRAW_COLOR_RED),
+        line((x, y + size), (x + size, y + size), DRAW_COLOR_RED),
+        line((x + size, y + size), (x + size, y - size), DRAW_COLOR_RED),
     ]
+    x += size + spacing
 
+    # L
+    letters['L'] = [
+        line((x, y - size), (x, y + size), DRAW_COLOR_RED),
+        line((x, y + size), (x + size, y + size), DRAW_COLOR_RED),
+    ]
     x += size + spacing
 
     # M
-    m_width = size + 20  # tăng chiều rộng chữ M
-
+    m_width = size + 20
     letters['M'] = [
-        make_stroke_line((x, y + size), (x, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),                         # Nét dọc trái
-        make_stroke_line((x, y - size), (x + m_width // 2, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),         # Nét chéo trái
-        make_stroke_line((x + m_width // 2, y + size), (x + m_width, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),  # Nét chéo phải xuống chân
-        make_stroke_line((x + m_width, y - size), (x + m_width, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),     # Nét dọc phải
+        line((x, y + size), (x, y - size), DRAW_COLOR_GRAY),
+        line((x, y - size), (x + m_width // 2, y + size), DRAW_COLOR_GRAY),
+        line((x + m_width // 2, y + size), (x + m_width, y - size), DRAW_COLOR_GRAY),
+        line((x + m_width, y - size), (x + m_width, y + size), DRAW_COLOR_GRAY),
     ]
-
-    x += m_width + spacing  # cập nhật x đúng với độ rộng mới
+    x += m_width + spacing
 
     # I
     letters['I'] = [
-        make_stroke_line((x + size // 2, y - size), (x + size // 2, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),
+        line((x + size // 2, y - size), (x + size // 2, y + size), DRAW_COLOR_GRAY),
     ]
-
     x += size + spacing
 
     # N
     letters['N'] = [
-        make_stroke_line((x, y + size), (x, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),
-        make_stroke_line((x, y - size), (x + size, y + size), DRAW_COLOR_GRAY, FRAME_DELAY),
-        make_stroke_line((x + size, y + size), (x + size, y - size), DRAW_COLOR_GRAY, FRAME_DELAY),
+        line((x, y + size), (x, y - size), DRAW_COLOR_GRAY),
+        line((x, y - size), (x + size, y + size), DRAW_COLOR_GRAY),
+        line((x + size, y + size), (x + size, y - size), DRAW_COLOR_GRAY),
     ]
-
     x += size + spacing
 
     # D
-    vertical_line = [(x, y - size), (x, y + size)]
-    arc_pts = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 15)
-    arc_points = [tuple(pt) for pt in arc_pts]
-    curve_stroke = Stroke(arc_points, DRAW_COLOR_GRAY, CURVE_FRAME_DELAY)
-    vertical_stroke = Stroke(vertical_line, DRAW_COLOR_GRAY, FRAME_DELAY)
-    letters['D'] = [vertical_stroke, curve_stroke]
+    arc = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 15)
+    letters['D'] = [
+        Stroke([(x, y - size), (x, y + size)], DRAW_COLOR_GRAY, FRAME_DELAY),
+        Stroke([tuple(p) for p in arc], DRAW_COLOR_GRAY, CURVE_FRAME_DELAY),
+    ]
 
     return letters
 
-# ========== TÍNH TOÁN CĂN GIỮA ==========
+# ========== CĂN GIỮA ==========
 def calculate_center_offset():
     size = 100
     spacing = 50
     total_width = 6 * size + 5 * spacing
     return (WIDTH - total_width) // 2
 
-# ========== VẼ TẤT CẢ CHỮ ĐỒNG THỜI ==========
+# ========== VẼ SONG SONG ==========
 def draw_all_letters_parallel(canvas, letters):
-    all_strokes = []
-    for ch in "LUMIND":
-        all_strokes.extend(letters[ch])
+    strokes = []
+    for ch in "ULMIND":
+        strokes.extend(letters[ch])
 
     frames = []
-    all_done = False
-
-    while not all_done:
-        all_done = True
-        for stroke in all_strokes:
-            stroke.draw_next(canvas)
-            if not stroke.done:
-                all_done = False
+    done = False
+    while not done:
+        done = True
+        for s in strokes:
+            s.draw_next(canvas)
+            if not s.done:
+                done = False
         frames.append(canvas.copy())
 
     for _ in range(END_HOLD_FRAMES):
@@ -153,4 +145,4 @@ for f in frames:
     out.write(f)
 out.release()
 
-print(f"Video đã được tạo: {VIDEO_NAME}")
+print("✅ Video đã tạo:", VIDEO_NAME)
