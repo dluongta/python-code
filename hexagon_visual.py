@@ -5,7 +5,7 @@ import math
 # --- CẤU HÌNH ---
 WIDTH, HEIGHT = 1920, 1080
 FPS = 30
-DURATION = 10
+DURATION = 20
 CENTER = (WIDTH // 2, HEIGHT // 2)
 MAX_RADIUS = 2800
 
