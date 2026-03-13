@@ -90,6 +90,7 @@ def make_final_logo_with_subtitle():
 
     MIND_clip = MIND_clip.set_position((start_x + w_L + w_U + w_ONG,0))
 
+    # ---------- L POSITION ----------
     def L_pos(t):
 
         if t < 1:
@@ -107,6 +108,7 @@ def make_final_logo_with_subtitle():
         return (start_x + dx,0)
 
 
+    # ---------- U POSITION ----------
     def U_pos(t):
 
         if t < 1:
@@ -127,7 +129,6 @@ def make_final_logo_with_subtitle():
     L_move = L_clip.set_position(L_pos)
     U_move = U_clip.set_position(U_pos)
 
-    # ---------- ONG MASK ----------
     def ONG_mask(t):
 
         mask = np.ones((H,int(w_ONG)),dtype=np.uint8)*255
@@ -145,17 +146,54 @@ def make_final_logo_with_subtitle():
     ONG_masked = ONG_masked.set_position((start_x + w_L + w_U,0))
 
 
+    # ---------- SUBTITLE ----------
+    def subtitle_img():
+        img = Image.new("RGB", (W, 100), (255, 255, 255))
+        draw = ImageDraw.Draw(img)
+        font2 = ImageFont.truetype(FONT_PATH, 50)
+
+        text2 = "DLUONGTA - ULTRA MIND"
+        w_sub = draw.textlength(text2, font=font2)
+        x_sub = (W - w_sub) // 2
+
+        draw.text((x_sub, 10), text2, font=font2, fill=(139, 0, 0))
+
+        return np.array(img)
+
+
+    subtitle_static = ImageClip(subtitle_img()).set_duration(4)
+
+
+    def subtitle_mask(t):
+
+        mask = np.zeros((100, W), dtype=np.uint8)
+
+        if 2.5 <= t <= 4:
+            reveal = int(((t - 2.5) / 1.5) * W)
+            mask[:, :reveal] = 255
+
+        elif t > 4:
+            mask[:, :] = 255
+
+        return mask[:, :, None]
+
+
+    subtitle = subtitle_static.set_mask(VideoClip(subtitle_mask, duration=4).to_mask())
+    subtitle = subtitle.set_position(("center", H // 2 + 80))
+
+
+    # ---------- FINAL COMPOSE ----------
     final = CompositeVideoClip([
         bg,
         ONG_masked,
         MIND_clip,
         L_move,
-        U_move
+        U_move,
+        subtitle
     ])
 
     return final
 
-# ---------- EXPORT ----------
 def create_full_intro():
     stage1 = make_scale_sequence()
     stage2 = make_flash_white()
