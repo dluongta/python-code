@@ -74,7 +74,7 @@ def make_final_logo_with_subtitle():
     w_MIND = draw_tmp.textlength(text_MIND,font=font)
 
     total_w = w_L + w_U + w_ONG + w_MIND
-    start_x = (W-total_w)//2 -100
+    start_x = (W-total_w)//2 -140
     y_pos = (H-font_size)//2
 
     def text_clip(text,color,width):
