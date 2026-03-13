@@ -55,7 +55,7 @@ def make_flash_white():
 
 def make_final_logo_with_subtitle():
 
-    bg = ColorClip(size=(W, H), color=(255,255,255), duration=4)
+    bg = ColorClip(size=(W, H), color=(255,255,255), duration=6)
 
     font_size = 130
     font = ImageFont.truetype(FONT_PATH, font_size)
@@ -81,7 +81,7 @@ def make_final_logo_with_subtitle():
         img = Image.new("RGB",(int(width),H),(255,255,255))
         draw = ImageDraw.Draw(img)
         draw.text((0,y_pos),text,font=font,fill=color)
-        return ImageClip(np.array(img)).set_duration(4)
+        return ImageClip(np.array(img)).set_duration(6)
 
     L_clip = text_clip(text_L,(139,0,0),w_L)
     U_clip = text_clip(text_U,(139,0,0),w_U)
@@ -90,7 +90,6 @@ def make_final_logo_with_subtitle():
 
     MIND_clip = MIND_clip.set_position((start_x + w_L + w_U + w_ONG,0))
 
-    # ---------- L POSITION ----------
     def L_pos(t):
 
         if t < 1:
@@ -142,17 +141,16 @@ def make_final_logo_with_subtitle():
 
         return mask[:,:,None]
 
-    ONG_masked = ONG_clip.set_mask(VideoClip(ONG_mask,duration=4).to_mask())
+    ONG_masked = ONG_clip.set_mask(VideoClip(ONG_mask,duration=6).to_mask())
     ONG_masked = ONG_masked.set_position((start_x + w_L + w_U,0))
 
 
-    # ---------- SUBTITLE ----------
     def subtitle_img():
         img = Image.new("RGB", (W, 100), (255, 255, 255))
         draw = ImageDraw.Draw(img)
         font2 = ImageFont.truetype(FONT_PATH, 50)
 
-        text2 = "DLUONGTA - ULTRA MIND"
+        text2 = "DLUONGTA - ULTRAMIND"
         w_sub = draw.textlength(text2, font=font2)
         x_sub = (W - w_sub) // 2
 
@@ -161,7 +159,7 @@ def make_final_logo_with_subtitle():
         return np.array(img)
 
 
-    subtitle_static = ImageClip(subtitle_img()).set_duration(4)
+    subtitle_static = ImageClip(subtitle_img()).set_duration(6)
 
 
     def subtitle_mask(t):
@@ -178,11 +176,10 @@ def make_final_logo_with_subtitle():
         return mask[:, :, None]
 
 
-    subtitle = subtitle_static.set_mask(VideoClip(subtitle_mask, duration=4).to_mask())
+    subtitle = subtitle_static.set_mask(VideoClip(subtitle_mask, duration=6).to_mask())
     subtitle = subtitle.set_position(("center", H // 2 + 80))
 
 
-    # ---------- FINAL COMPOSE ----------
     final = CompositeVideoClip([
         bg,
         ONG_masked,
