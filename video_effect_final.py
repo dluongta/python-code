@@ -91,20 +91,20 @@ for i in range(total_frames):
     # ===== NHÓM TRÊN TRÁI =====
     frame = overlay_png(
         frame, overlay,
-        int(W * 0.05), int(H * 0.05),
+        int(W * 0.01) - 20, int(H * 0.05),
         big_scale * zoom_left
     )
 
     frame = overlay_png(
         frame, overlay,
-        int(W * 0.8), int(H * 0.65),
+        int(W * 0.6), int(H * 0.65),
         small_scale * zoom_left
     )
 
     # ===== NHÓM TRÊN PHẢI =====
     frame = overlay_png(
         frame, overlay,
-        int(W * 0.60), int(H * 0.05),
+        int(W * 0.55) -40, int(H * 0.05),
         big_scale * zoom_right
     )
 
