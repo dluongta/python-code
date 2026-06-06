@@ -2,16 +2,18 @@ import cv2
 import numpy as np
 
 # ========== CẤU HÌNH ==========
-WIDTH, HEIGHT = 1280, 720
+WIDTH, HEIGHT = 1600, 720
 BG_COLOR = (255, 255, 255)
-DRAW_COLOR_RED = (0, 0, 160)     # U L
-DRAW_COLOR_GRAY = (50, 50, 50)   # MIND
+
+# Màu cam (BGR)
+DRAW_COLOR = (0, 165, 255)
+
 LINE_THICKNESS = 8
 FRAME_DELAY = 15
 CURVE_FRAME_DELAY = 1
 END_HOLD_FRAMES = 30
 FPS = 10
-VIDEO_NAME = "ulmind_logo.mp4"
+VIDEO_NAME = "dluongta_logo.mp4"
 
 # ========== LỚP NÉT VẼ ==========
 class Stroke:
@@ -26,107 +28,157 @@ class Stroke:
     def draw_next(self, canvas):
         if self.done:
             for i in range(1, len(self.points)):
-                cv2.line(canvas, self.points[i-1], self.points[i], self.color, LINE_THICKNESS)
+                cv2.line(
+                    canvas,
+                    self.points[i - 1],
+                    self.points[i],
+                    self.color,
+                    LINE_THICKNESS,
+                )
             return
 
         pt1 = self.points[self.current_segment]
         pt2 = self.points[self.current_segment + 1]
 
         t = self.current_step + 1
+
         if t > self.delay:
             cv2.line(canvas, pt1, pt2, self.color, LINE_THICKNESS)
             self.current_segment += 1
             self.current_step = 0
+
             if self.current_segment >= len(self.points) - 1:
                 self.done = True
             return
 
         alpha = t / self.delay
+
         x = int(pt1[0] * (1 - alpha) + pt2[0] * alpha)
         y = int(pt1[1] * (1 - alpha) + pt2[1] * alpha)
+
         cv2.line(canvas, pt1, (x, y), self.color, LINE_THICKNESS)
+
         self.current_step += 1
+
 
 # ========== TẠO CHỮ ==========
 def get_letter_strokes(x_offset):
     letters = {}
-    size = 100
-    spacing = 50
+
+    size = 80
+    spacing = 30
+
     y = HEIGHT // 2
     x = x_offset
 
-    def line(p1, p2, color):
-        return Stroke([p1, p2], color, FRAME_DELAY)
+    def line(p1, p2):
+        return Stroke([p1, p2], DRAW_COLOR, FRAME_DELAY)
 
-    # U
-    letters['U'] = [
-        line((x, y - size), (x, y + size), DRAW_COLOR_RED),
-        line((x, y + size), (x + size, y + size), DRAW_COLOR_RED),
-        line((x + size, y + size), (x + size, y - size), DRAW_COLOR_RED),
+    # D
+    arc = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 10)
+    letters["D"] = [
+        line((x, y - size), (x, y + size)),
+        Stroke([tuple(p) for p in arc], DRAW_COLOR, CURVE_FRAME_DELAY),
     ]
     x += size + spacing
 
     # L
-    letters['L'] = [
-        line((x, y - size), (x, y + size), DRAW_COLOR_RED),
-        line((x, y + size), (x + size, y + size), DRAW_COLOR_RED),
+    letters["L"] = [
+        line((x, y - size), (x, y + size)),
+        line((x, y + size), (x + size, y + size)),
     ]
     x += size + spacing
 
-    # M
-    m_width = size + 20
-    letters['M'] = [
-        line((x, y + size), (x, y - size), DRAW_COLOR_GRAY),
-        line((x, y - size), (x + m_width // 2, y + size), DRAW_COLOR_GRAY),
-        line((x + m_width // 2, y + size), (x + m_width, y - size), DRAW_COLOR_GRAY),
-        line((x + m_width, y - size), (x + m_width, y + size), DRAW_COLOR_GRAY),
+    # U
+    letters["U"] = [
+        line((x, y - size), (x, y + size)),
+        line((x, y + size), (x + size, y + size)),
+        line((x + size, y + size), (x + size, y - size)),
     ]
-    x += m_width + spacing
+    x += size + spacing
 
-    # I
-    letters['I'] = [
-        line((x + size // 2, y - size), (x + size // 2, y + size), DRAW_COLOR_GRAY),
+    # O
+    arc_o = cv2.ellipse2Poly(
+        (x + size // 2, y),
+        (size // 2, size),
+        0,
+        0,
+        360,
+        10
+    )
+    letters["O"] = [
+        Stroke([tuple(p) for p in arc_o], DRAW_COLOR, CURVE_FRAME_DELAY)
     ]
     x += size + spacing
 
     # N
-    letters['N'] = [
-        line((x, y + size), (x, y - size), DRAW_COLOR_GRAY),
-        line((x, y - size), (x + size, y + size), DRAW_COLOR_GRAY),
-        line((x + size, y + size), (x + size, y - size), DRAW_COLOR_GRAY),
+    letters["N"] = [
+        line((x, y + size), (x, y - size)),
+        line((x, y - size), (x + size, y + size)),
+        line((x + size, y + size), (x + size, y - size)),
     ]
     x += size + spacing
 
-    # D
-    arc = cv2.ellipse2Poly((x, y), (size, size), 0, -90, 90, 15)
-    letters['D'] = [
-        Stroke([(x, y - size), (x, y + size)], DRAW_COLOR_GRAY, FRAME_DELAY),
-        Stroke([tuple(p) for p in arc], DRAW_COLOR_GRAY, CURVE_FRAME_DELAY),
+    # G
+    arc_g = cv2.ellipse2Poly(
+        (x + size // 2, y),
+        (size // 2, size),
+        0,
+        0,
+        330,
+        10
+    )
+    letters["G"] = [
+        Stroke([tuple(p) for p in arc_g], DRAW_COLOR, CURVE_FRAME_DELAY),
+        line((x + size // 2, y), (x + size, y)),
+    ]
+    x += size + spacing
+
+    # T
+    letters["T"] = [
+        line((x, y - size), (x + size, y - size)),
+        line((x + size // 2, y - size), (x + size // 2, y + size)),
+    ]
+    x += size + spacing
+
+    # A
+    letters["A"] = [
+        line((x, y + size), (x + size // 2, y - size)),
+        line((x + size // 2, y - size), (x + size, y + size)),
+        line((x + size // 4, y), (x + 3 * size // 4, y)),
     ]
 
     return letters
 
+
 # ========== CĂN GIỮA ==========
 def calculate_center_offset():
-    size = 100
-    spacing = 50
-    total_width = 6 * size + 5 * spacing
+    size = 80
+    spacing = 30
+    total_width = 8 * size + 7 * spacing
     return (WIDTH - total_width) // 2
+
 
 # ========== VẼ SONG SONG ==========
 def draw_all_letters_parallel(canvas, letters):
     strokes = []
-    for ch in "ULMIND":
+
+    for ch in "DLUONGTA":
         strokes.extend(letters[ch])
 
     frames = []
+
     done = False
+
     while not done:
         done = True
-        for s in strokes:
-            s.draw_next(canvas)
-            if not s.done:
+
+        for stroke in strokes:
+            stroke.draw_next(canvas)
+
+            if not stroke.done:
                 done = False
+
         frames.append(canvas.copy())
 
     for _ in range(END_HOLD_FRAMES):
@@ -134,15 +186,26 @@ def draw_all_letters_parallel(canvas, letters):
 
     return frames
 
+
 # ========== MAIN ==========
 canvas = np.full((HEIGHT, WIDTH, 3), BG_COLOR, dtype=np.uint8)
+
 letters = get_letter_strokes(calculate_center_offset())
+
 frames = draw_all_letters_parallel(canvas, letters)
 
 h, w, _ = frames[0].shape
-out = cv2.VideoWriter(VIDEO_NAME, cv2.VideoWriter_fourcc(*'mp4v'), FPS, (w, h))
-for f in frames:
-    out.write(f)
+
+out = cv2.VideoWriter(
+    VIDEO_NAME,
+    cv2.VideoWriter_fourcc(*'mp4v'),
+    FPS,
+    (w, h)
+)
+
+for frame in frames:
+    out.write(frame)
+
 out.release()
 
-print("✅ Video đã tạo:", VIDEO_NAME)
+print("Video đã tạo:", VIDEO_NAME)
