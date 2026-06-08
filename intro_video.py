@@ -6,7 +6,7 @@ import random
 W, H = 1920, 1080         # Độ phân giải Full HD (16:9)
 cx, cy = W // 2, H // 2   # Tọa độ tâm màn hình
 fps = 30                  # Số khung hình trên giây
-duration = 30             # Thời lượng video (giây)
+duration = 58             # Thời lượng video (giây)
 total_frames = fps * duration
 
 # Khởi tạo công cụ ghi video chất lượng cao
