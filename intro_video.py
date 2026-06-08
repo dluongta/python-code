@@ -15,11 +15,12 @@ out = cv2.VideoWriter('intro_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (
 # --- MÀU SẮC TƯƠI SÁNG (Định dạng BGR) ---
 colors = [
     (180, 105, 255), # Hồng tươi
-    (0, 255, 255),   # Vàng
+    # (0, 255, 255),   # Vàng
     (255, 255, 0),   # Xanh Cyan (Xanh lơ)
-    (0, 165, 255),   # Cam
+    # (0, 165, 255),   # Cam
     (255, 100, 100), # Xanh dương nhạt
-    (200, 200, 255)  # Trắng hồng
+    (200, 200, 255),  # Trắng hồng
+    (255, 64, 128)   # Hồng đậm
 ]
 
 # --- HÀM VẼ HÌNH ẢNH ---
@@ -30,7 +31,7 @@ def draw_flower(img, x, y, size, color):
         px = int(x + np.cos(rad) * size * 0.7)
         py = int(y + np.sin(rad) * size * 0.7)
         cv2.circle(img, (px, py), int(size * 0.5), color, -1, lineType=cv2.LINE_AA)
-    cv2.circle(img, (int(x), int(y)), int(size * 0.4), (0, 255, 255), -1, lineType=cv2.LINE_AA)
+    cv2.circle(img, (int(x), int(y)), int(size * 0.4), (0, 165, 255), -1, lineType=cv2.LINE_AA)
 
 def draw_leaf(img, x, y, size):
     """Vẽ một chiếc lá bầu dục"""
