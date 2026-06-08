@@ -13,14 +13,15 @@ total_frames = fps * duration
 out = cv2.VideoWriter('intro_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (W, H))
 
 # --- MÀU SẮC TƯƠI SÁNG (Định dạng BGR) ---
+
 colors = [
     (180, 105, 255), # Hồng tươi
-    # (0, 255, 255),   # Vàng
-    (255, 255, 0),   # Xanh Cyan (Xanh lơ)
-    # (0, 165, 255),   # Cam
-    (255, 100, 100), # Xanh dương nhạt
-    (200, 200, 255),  # Trắng hồng
-    (255, 64, 128)   # Hồng đậm
+    (0, 0, 255),     # ĐỎ 
+    (255, 100, 100),    # Xanh dương nhạt
+    (100, 100, 255),  # Xanh dương tím
+    (200, 200, 255), # Trắng hồng
+    (128, 64, 255),   # HỒNG ĐẬM 
+    (0, 165, 255),   # Cam
 ]
 
 # --- HÀM VẼ HÌNH ẢNH ---
