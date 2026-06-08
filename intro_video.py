@@ -16,7 +16,7 @@ out = cv2.VideoWriter('intro_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (
 
 colors = [
     (180, 105, 255), # Hồng tươi
-    (0, 0, 255),     # ĐỎ 
+    (255, 255, 0),  # Xanh Cyan 
     (255, 100, 100),    # Xanh dương nhạt
     (100, 100, 255),  # Xanh dương tím
     (200, 200, 255), # Trắng hồng
