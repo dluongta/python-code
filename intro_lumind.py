@@ -5,7 +5,7 @@ import numpy as np
 WIDTH, HEIGHT = 1920, 1080
 BG_COLOR = (255, 255, 255)
 
-RED_DARK = (0, 0, 180)   # đỏ thẫm (BGR)
+RED_DARK = (7, 3, 167)   # đỏ thẫm (BGR)
 GRAY = (120, 120, 120)   # xám
 
 LINE_THICKNESS = 16
