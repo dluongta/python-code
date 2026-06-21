@@ -103,8 +103,8 @@ def get_letter_strokes(x_offset):
     letters["D"] = [
         L((x, y - size), (x, y + size), GRAY),                                          # 1. Nét dọc trái
         L((x, y - size), (x + size + 10, y - size), GRAY),                               # 2. Nét ngang trên (Dài thêm 40px)
-        L((x + size + 10, y - size), (x + size + 10, y + size), GRAY),                  # 3. Nét dọc phải
-        L((x + size + 10, y + size), (x, y + size), GRAY),                              # 4. Nét ngang dưới (Dài thêm 40px)
+        L((x + size + 11, y - size), (x + size + 11, y + size), GRAY),                  # 3. Nét dọc phải
+        L((x + size + 11, y + size), (x, y + size), GRAY),                              # 4. Nét ngang dưới (Dài thêm 40px)
     ]
 
     return letters
