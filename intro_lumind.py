@@ -91,20 +91,20 @@ def get_letter_strokes(x_offset):
     ]
     x += size + spacing
 
-    # ===== N (xám - Dọc lên -> Ngang -> Dọc xuống) =====
+    # ===== N (xám - Khuyết dưới: Tăng chiều ngang thêm 40 pixel) =====
     letters["N"] = [
         L((x, y + size), (x, y - size), GRAY),               # 1. Dọc lên (Cạnh trái)
-        L((x, y - size), (x + size, y - size), GRAY),        # 2. Ngang qua (Cạnh trên)
-        L((x + size, y - size), (x + size, y + size), GRAY), # 3. Dọc xuống (Cạnh phải)
+        L((x, y - size), (x + size + 13, y - size), GRAY),    # 2. Ngang qua (Cộng thêm 40px)
+        L((x + size + 13, y - size), (x + size + 13, y + size), GRAY), # 3. Dọc xuống (Cộng thêm 40px)
     ]
-    x += size + spacing
+    x += size + 13 + spacing # Nhớ cộng thêm 40 ở đây để chữ D phía sau dịch qua phải, không bị đè lên chữ N
 
     # ===== D ===== (vuông, không cong)
     letters["D"] = [
-        L((x, y - size), (x, y + size), GRAY),
-        L((x, y - size), (x + size, y - size), GRAY),
-        L((x + size, y - size), (x + size, y + size), GRAY),
-        L((x + size, y + size), (x, y + size), GRAY),
+        L((x, y - size), (x, y + size), GRAY),                                          # 1. Nét dọc trái
+        L((x, y - size), (x + size + 10, y - size), GRAY),                               # 2. Nét ngang trên (Dài thêm 40px)
+        L((x + size + 10, y - size), (x + size + 10, y + size), GRAY),                  # 3. Nét dọc phải
+        L((x + size + 10, y + size), (x, y + size), GRAY),                              # 4. Nét ngang dưới (Dài thêm 40px)
     ]
 
     return letters
@@ -114,6 +114,7 @@ def get_letter_strokes(x_offset):
 def calculate_center_offset():
     size = 140
     spacing = 60
+    # Tất cả 6 chữ giờ đều có cùng độ rộng là `size`
     total_width = 6 * size + 5 * spacing
     return (WIDTH - total_width) // 2
 
