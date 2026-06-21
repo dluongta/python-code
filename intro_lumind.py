@@ -91,11 +91,11 @@ def get_letter_strokes(x_offset):
     ]
     x += size + spacing
 
-    # ===== N =====
+    # ===== N (xám - Dọc lên -> Ngang -> Dọc xuống) =====
     letters["N"] = [
-        L((x, y + size), (x, y - size), GRAY),
-        L((x, y - size), (x + size, y + size), GRAY),
-        L((x + size, y + size), (x + size, y - size), GRAY),
+        L((x, y + size), (x, y - size), GRAY),               # 1. Dọc lên (Cạnh trái)
+        L((x, y - size), (x + size, y - size), GRAY),        # 2. Ngang qua (Cạnh trên)
+        L((x + size, y - size), (x + size, y + size), GRAY), # 3. Dọc xuống (Cạnh phải)
     ]
     x += size + spacing
 
@@ -164,4 +164,4 @@ for f in frames:
 
 out.release()
 
-print("Đã tạo video:", VIDEO_NAME)
+print("Đã tạo video thành công:", VIDEO_NAME)
