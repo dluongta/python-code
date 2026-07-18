@@ -86,4 +86,4 @@ if __name__ == "__main__":
     generate_insta_bg_final("bg-1-2.png", width=1920, height=1080, is_jpeg=False)
     
     # Tạo ảnh dọc (Story/Reels 1080x1920 - JPG chất lượng cao)
-    generate_insta_bg_final("bg-2-2.jpg", width=1080, height=1920, is_jpeg=True)
+    generate_insta_bg_final("bg-2-2.png", width=1080, height=1920, is_jpeg=True)
