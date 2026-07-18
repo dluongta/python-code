@@ -28,12 +28,15 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
         dist_yellow = np.sqrt(((u - 0.2) * 0.7)**2 + ((v - 1.15) * 1.3)**2)
         dist_yellow_exp = dist_yellow[:, :, np.newaxis]
         
-        w_yellow = np.clip(1.0 - dist_yellow_exp / 0.55, 0, 1)
+        # Tăng vùng lan tỏa màu vàng (từ 0.55 lên 0.7)
+        w_yellow = np.clip(1.0 - dist_yellow_exp / 0.7, 0, 1)
         w_yellow = w_yellow**2 * (3 - 2 * w_yellow)  # Làm mượt Smoothstep
         
         dist_orange = np.sqrt(((u - 0.4) * 0.8)**2 + ((v - 1.1) * 1.1)**2)
         dist_orange_exp = dist_orange[:, :, np.newaxis]
-        w_orange = np.clip(1.0 - dist_orange_exp / 0.95, 0, 1) - w_yellow * 0.8
+        
+        # Tăng vùng lan tỏa màu cam (từ 0.95 lên 1.2)
+        w_orange = np.clip(1.0 - dist_orange_exp / 1.2, 0, 1) - w_yellow * 0.8
         w_orange = np.clip(w_orange, 0, 1)
         w_orange = w_orange**1.5 * (3 - 2 * w_orange)
         
@@ -43,10 +46,12 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
         dist = np.sqrt(((u - 0.35) * aspect)**2 + (v - 1.15)**2)
         dist_exp = dist[:, :, np.newaxis]
         
-        w_yellow = np.clip(1.0 - dist_exp / 0.55, 0, 1)
+        # Tăng vùng lan tỏa màu vàng
+        w_yellow = np.clip(1.0 - dist_exp / 0.7, 0, 1)
         w_yellow = w_yellow**2 * (3 - 2 * w_yellow)
         
-        w_orange = np.clip(1.0 - dist_exp / 0.95, 0, 1) - w_yellow
+        # Tăng vùng lan tỏa màu cam
+        w_orange = np.clip(1.0 - dist_exp / 1.2, 0, 1) - w_yellow
         w_orange = np.clip(w_orange, 0, 1)
         w_orange = w_orange**1.5 * (3 - 2 * w_orange)
         
