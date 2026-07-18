@@ -13,25 +13,24 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
     # 2. Bộ màu chuẩn Instagram rực rỡ
     blue_purple = np.array([65, 80, 245], dtype=np.float32)   # Xanh tím (trên trái)
     magenta     = np.array([230, 25, 155], dtype=np.float32)  # Hồng magenta (trên phải/giữa)
-    orange_red  = np.array([255, 75, 20], dtype=np.float32)   # Cam đậm / đỏ cam (lan rộng bên phải và lên trên)
-    yellow_gold = np.array([255, 215, 10], dtype=np.float32)  # Vàng sáng rực (vòng ngang bẹt dưới trái)
+    orange_red  = np.array([255, 75, 20], dtype=np.float32)   # Cam đậm / đỏ cam (lan rộng bên phải/lên trên)
+    yellow_gold = np.array([255, 215, 10], dtype=np.float32)  # Vàng sáng rực (vòng ngang dưới trái)
     
-    # 3. Lớp nền phía trên: Chuyển sắc từ xanh tím sang hồng magenta theo chiều ngang
-    top_layer = (1 - u_exp) * blue_purple + u_exp * magenta
+    # 3. Lớp nền phía trên: Ép xanh tím góc trên trái, không lan sang phải
+    # - Nhân u_exp với 1.6 để rút ngắn độ lan sang phải (chuyển sang magenta nhanh hơn)
+    # - Cộng thêm v_exp * 0.3 để ép xanh tím không tràn xuống dưới
+    mix_factor = np.clip(u_exp * 1.6 + v_exp * 0.3, 0, 1)
+    top_layer = (1 - mix_factor) * blue_purple + mix_factor * magenta
     
     # 4. Phân tách thuật toán tự động theo tỉ lệ khung hình
     if width > height:
         # --- DÀNH CHO ẢNH NGANG (1920x1080) ---
-        # Tâm vòng vàng đặt tại góc dưới bên trái (u = 0.2, v = 1.15)
-        # Sử dụng hệ số co giãn elip (0.7 cho u và 1.3 cho v) để tạo vòng sáng "ngang bẹt"
         dist_yellow = np.sqrt(((u - 0.2) * 0.7)**2 + ((v - 1.15) * 1.3)**2)
         dist_yellow_exp = dist_yellow[:, :, np.newaxis]
         
-        # Vòng cam vàng chiếm 1 khoảng nhỏ ở góc trái dưới
         w_yellow = np.clip(1.0 - dist_yellow_exp / 0.55, 0, 1)
         w_yellow = w_yellow**2 * (3 - 2 * w_yellow)  # Làm mượt Smoothstep
         
-        # Vòng cam đậm lan rộng chiếm trọn phần bên phải và đẩy mạnh lên phía trên
         dist_orange = np.sqrt(((u - 0.4) * 0.8)**2 + ((v - 1.1) * 1.1)**2)
         dist_orange_exp = dist_orange[:, :, np.newaxis]
         w_orange = np.clip(1.0 - dist_orange_exp / 0.95, 0, 1) - w_yellow * 0.8
@@ -40,7 +39,6 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
         
     else:
         # --- DÀNH CHO ẢNH DỌC (1080x1920) ---
-        # Giữ nguyên cấu trúc tỏa tròn chuẩn đẹp
         aspect = width / height
         dist = np.sqrt(((u - 0.35) * aspect)**2 + (v - 1.15)**2)
         dist_exp = dist[:, :, np.newaxis]
@@ -80,7 +78,7 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
 
 if __name__ == "__main__":
     # Tạo ảnh ngang (Full HD 1920x1080 - PNG)
-    generate_insta_bg_final("bg-1.png", width=1920, height=1080, is_jpeg=False)
+    generate_insta_bg_final("bg-1-2.png", width=1920, height=1080, is_jpeg=False)
     
     # Tạo ảnh dọc (Story/Reels 1080x1920 - JPG chất lượng cao)
-    generate_insta_bg_final("bg-2.jpg", width=1080, height=1920, is_jpeg=True)
+    generate_insta_bg_final("bg-2-2.jpg", width=1080, height=1920, is_jpeg=True)
