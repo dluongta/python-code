@@ -6,44 +6,58 @@ def generate_insta_bg_final(filename="bg-1.png", width=1920, height=1080, is_jpe
     y = np.linspace(0, 1, height)
     u, v = np.meshgrid(x, y)
     
-    # Chỉ cần dùng v_exp (trục dọc) vì ta muốn màu xếp theo hàng ngang từ trên xuống
+    u_exp = u[:, :, np.newaxis]
     v_exp = v[:, :, np.newaxis]
     
-    blue_purple = np.array([65, 80, 245], dtype=np.float32)   # Xanh tím (trên cùng)
-    magenta     = np.array([230, 25, 155], dtype=np.float32)  # Hồng magenta (lớp 2)
-    orange_red  = np.array([255, 75, 20], dtype=np.float32)   # Cam đậm / đỏ cam (lớp 3)
-    yellow_gold = np.array([255, 215, 10], dtype=np.float32)  # Vàng sáng rực (dưới cùng)
+    # --- ĐÃ SỬA MÀU Ở ĐÂY ---
+    magenta_top_left = np.array([230, 25, 155], dtype=np.float32) # Đổi từ xanh tím sang Hồng magenta
+    magenta          = np.array([230, 25, 155], dtype=np.float32) # Hồng magenta (trên phải/giữa)
+    orange_red       = np.array([255, 75, 20], dtype=np.float32)  # Cam đậm / đỏ cam
+    yellow_gold      = np.array([255, 215, 10], dtype=np.float32) # Vàng sáng rực
     
-    # Chia chiều dọc thành 3 phân khúc cho 4 màu (0 -> 2.999 để tránh lỗi giới hạn ở viền)
-    v_scaled = np.clip(v_exp * 3.0, 0.0, 2.9999)
+    mix_factor = np.clip(u_exp * 1.6 + v_exp * 0.3, 0, 1)
+    top_layer = (1 - mix_factor) * magenta_top_left + mix_factor * magenta
+    # ------------------------
     
-    # Lấy phần thập phân để tính tỷ lệ blend (từ 0.0 -> 1.0 trong mỗi phân khúc)
-    f = v_scaled % 1.0
+    if width > height:
+        dist_yellow = np.sqrt(((u - 0.2) * 0.7)**2 + ((v - 1.15) * 1.3)**2)
+        dist_yellow_exp = dist_yellow[:, :, np.newaxis]
+        
+        w_yellow = np.clip(1.0 - dist_yellow_exp / 0.7, 0, 1)
+        w_yellow = w_yellow**2 * (3 - 2 * w_yellow)  # Làm mượt Smoothstep
+        
+        dist_orange = np.sqrt(((u - 0.4) * 0.8)**2 + ((v - 1.1) * 1.1)**2)
+        dist_orange_exp = dist_orange[:, :, np.newaxis]
+        
+        w_orange = np.clip(1.0 - dist_orange_exp / 1.2, 0, 1) - w_yellow * 0.8
+        w_orange = np.clip(w_orange, 0, 1)
+        w_orange = w_orange**1.5 * (3 - 2 * w_orange)
+        
+    else:
+        aspect = width / height
+        dist = np.sqrt(((u - 0.35) * aspect)**2 + (v - 1.15)**2)
+        dist_exp = dist[:, :, np.newaxis]
+        
+        w_yellow = np.clip(1.0 - dist_exp / 0.7, 0, 1)
+        w_yellow = w_yellow**2 * (3 - 2 * w_yellow)
+        
+        w_orange = np.clip(1.0 - dist_exp / 1.2, 0, 1) - w_yellow
+        w_orange = np.clip(w_orange, 0, 1)
+        w_orange = w_orange**1.5 * (3 - 2 * w_orange)
+        
+    w_top = np.clip(1.0 - w_yellow - w_orange, 0, 1)
     
-    # Làm mượt (Smoothstep) để dải gradient hòa quyện tự nhiên hơn
-    f = f**2 * (3.0 - 2.0 * f)
+    total_w = w_top + w_orange + w_yellow + 1e-5
+    w_top /= total_w
+    w_orange /= total_w
+    w_yellow /= total_w
     
-    # Tạo ma trận chứa giá trị màu
-    gradient = np.zeros((height, width, 3), dtype=np.float32)
+    gradient = w_top * top_layer + w_orange * orange_red + w_yellow * yellow_gold
     
-    # Phân khúc 1: Xanh tím -> Magenta
-    mask0 = (v_scaled >= 0.0) & (v_scaled < 1.0)
-    gradient += mask0 * ((1 - f) * blue_purple + f * magenta)
-    
-    # Phân khúc 2: Magenta -> Đỏ Cam
-    mask1 = (v_scaled >= 1.0) & (v_scaled < 2.0)
-    gradient += mask1 * ((1 - f) * magenta + f * orange_red)
-    
-    # Phân khúc 3: Đỏ Cam -> Vàng Gold
-    mask2 = (v_scaled >= 2.0)
-    gradient += mask2 * ((1 - f) * orange_red + f * yellow_gold)
-    
-    # Thêm nhiễu (noise) để khử hiện tượng phân lớp màu (banding) trên gradient
     np.random.seed(42)
     noise = np.random.normal(scale=1.2, size=gradient.shape).astype(np.float32)
     gradient = np.clip(gradient + noise, 0, 255).astype(np.uint8)
     
-    # Lưu ảnh
     img = Image.fromarray(gradient)
     if is_jpeg:
         img.save(filename, "JPEG", quality=98, subsampling=0)
