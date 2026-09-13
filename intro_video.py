@@ -1818,9 +1818,11 @@ def main():
     # TẠO TAM GIÁC NGOÀI
     # =====================================================
 
-    outer_triangles = create_outer_triangles(
-        clusters
-    )
+    # outer_triangles = create_outer_triangles(
+    #     clusters
+    # )
+    # Không tạo tam giác ngoài
+    outer_triangles = []
 
     # =====================================================
     # THỐNG KÊ
