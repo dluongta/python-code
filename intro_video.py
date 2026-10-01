@@ -129,7 +129,7 @@ OUTER_SWAY_MAX = 9.0
 
 
 # =========================================================
-# CHUYỂN ĐỘNG RIÊNG CỦA 3 ĐIỂM
+# CHUYỂN ĐỘNG RIÊNG CỦA CÁC ĐIỂM (NGOÀI)
 # =========================================================
 
 OUTER_POINT_MIN_SPEED = 0.45
@@ -140,6 +140,22 @@ OUTER_POINT_MAX_RADIUS_MAX = 65
 
 OUTER_POINT_WANDER_FORCE = 0.018
 OUTER_POINT_RETURN_FORCE = 0.20
+
+
+# =========================================================
+# CẤU HÌNH NHÓM ĐƯỜNG GẤP KHÚC (4 CHẤM)
+# =========================================================
+
+NUM_DOT_GROUPS = 8
+
+DOT_GROUP_MIN_SPEED = 0.25
+DOT_GROUP_MAX_SPEED = 0.75
+
+DOT_GROUP_WAVE_MIN = 0.015
+DOT_GROUP_WAVE_MAX = 0.045
+
+DOT_GROUP_SWAY_MIN = 3.0
+DOT_GROUP_SWAY_MAX = 9.0
 
 
 # =========================================================
@@ -705,302 +721,66 @@ def rotate_point(
 
 
 # =========================================================
-# TẠO TAM GIÁC NGOÀI
-#
-# QUAN TRỌNG:
-#
-# Mỗi triangle CHỈ có đúng 3 points.
-#
-# Mỗi point đều có:
-#
-# x
-# y
-# local_x
-# local_y
-# vx
-# vy
-# phase
-# phase_speed
-# max_radius
-#
+# TẠO NHÓM ĐƯỜNG GẤP KHÚC (4 CHẤM)
 # =========================================================
 
-def create_outer_triangles(clusters):
+def create_dot_groups(clusters):
 
-    outer_triangles = []
-
-    target_count = random.randint(
-        MIN_OUTER_TRIANGLES,
-        MAX_OUTER_TRIANGLES
-    )
+    dot_groups = []
 
     attempts = 0
-    max_attempts = 50000
+    max_attempts = 5000
 
     while (
-        len(outer_triangles) < target_count
+        len(dot_groups) < NUM_DOT_GROUPS
         and attempts < max_attempts
     ):
-
         attempts += 1
 
         # =================================================
-        # VỊ TRÍ TÂM
+        # VỊ TRÍ TÂM NHÓM
         # =================================================
 
-        angle = random.uniform(
-            0,
-            math.pi * 2
+        center_x = random.uniform(
+            150,
+            WIDTH - 150
+        )
+        center_y = random.uniform(
+            150,
+            HEIGHT - 150
         )
 
-        radius_x = random.uniform(
-            OUTER_MIN_RADIUS_X,
-            OUTER_MAX_RADIUS_X
-        )
-
-        radius_y = random.uniform(
-            OUTER_MIN_RADIUS_Y,
-            OUTER_MAX_RADIUS_Y
-        )
-
-        center_x = (
-            CENTER_X
-            + math.cos(angle)
-            * radius_x
-        )
-
-        center_y = (
-            CENTER_Y
-            + math.sin(angle)
-            * radius_y
-        )
-
-        # =================================================
-        # MARGIN
-        # =================================================
-
-        margin = 90
-
-        if center_x < margin:
-            continue
-
-        if center_x > WIDTH - margin:
-            continue
-
-        if center_y < margin:
-            continue
-
-        if center_y > HEIGHT - margin:
-            continue
-
-        # =================================================
-        # KHÔNG QUÁ GẦN CỤM CHÍNH
-        # =================================================
-
-        too_close_to_main = False
-
+        # Tránh các cụm chính
+        too_close = False
         for cluster in clusters:
-
-            distance = math.hypot(
+            dist = math.hypot(
                 center_x - cluster["center_x"],
                 center_y - cluster["center_y"]
             )
-
-            if distance < 130:
-
-                too_close_to_main = True
+            if dist < 120:
+                too_close = True
                 break
-
-        if too_close_to_main:
+        
+        if too_close:
             continue
 
         # =================================================
-        # KHÔNG QUÁ GẦN TAM GIÁC NGOÀI KHÁC
-        # =================================================
-
-        too_close_to_outer = False
-
-        for outer in outer_triangles:
-
-            distance = math.hypot(
-                center_x - outer["center_x"],
-                center_y - outer["center_y"]
-            )
-
-            if distance < MIN_OUTER_DISTANCE:
-
-                too_close_to_outer = True
-                break
-
-        if too_close_to_outer:
-            continue
-
-        # =================================================
-        # KÍCH THƯỚC
-        # =================================================
-
-        radius = random.uniform(
-            OUTER_TRIANGLE_MIN_RADIUS,
-            OUTER_TRIANGLE_MAX_RADIUS
-        )
-
-        scale_x = random.uniform(
-            OUTER_SCALE_MIN_X,
-            OUTER_SCALE_MAX_X
-        )
-
-        scale_y = random.uniform(
-            OUTER_SCALE_MIN_Y,
-            OUTER_SCALE_MAX_Y
-        )
-
-        rotation = random.uniform(
-            0,
-            math.pi * 2
-        )
-
-        # =================================================
-        # TẠO ĐÚNG 3 ĐIỂM
-        # =================================================
-
-        points = []
-
-        for i in range(3):
-
-            base_angle = (
-                i
-                * 2
-                * math.pi
-                / 3
-            )
-
-            angle_offset = random.uniform(
-                -0.10,
-                0.10
-            )
-
-            local_angle = (
-                base_angle
-                + angle_offset
-            )
-
-            point_radius = random.uniform(
-                0.92,
-                1.08
-            )
-
-            local_x = (
-                math.cos(local_angle)
-                * radius
-                * point_radius
-                * scale_x
-            )
-
-            local_y = (
-                math.sin(local_angle)
-                * radius
-                * point_radius
-                * scale_y
-            )
-
-            rotated_x, rotated_y = rotate_point(
-                local_x,
-                local_y,
-                rotation
-            )
-
-            px = center_x + rotated_x
-            py = center_y + rotated_y
-
-            # =================================================
-            # VẬN TỐC RIÊNG CHO POINT
-            # =================================================
-
-            point_speed = random.uniform(
-                OUTER_POINT_MIN_SPEED,
-                OUTER_POINT_MAX_SPEED
-            )
-
-            point_direction = random.uniform(
-                0,
-                math.pi * 2
-            )
-
-            point_vx = (
-                math.cos(point_direction)
-                * point_speed
-            )
-
-            point_vy = (
-                math.sin(point_direction)
-                * point_speed
-            )
-
-            # =================================================
-            # DAO ĐỘNG RIÊNG
-            # =================================================
-
-            point_phase = random.uniform(
-                0,
-                math.pi * 2
-            )
-
-            point_phase_speed = random.uniform(
-                0.008,
-                0.018
-            )
-
-            # =================================================
-            # BÁN KÍNH TỐI ĐA
-            # =================================================
-
-            point_max_radius = random.uniform(
-                OUTER_POINT_MAX_RADIUS_MIN,
-                OUTER_POINT_MAX_RADIUS_MAX
-            )
-
-            # =================================================
-            # LƯU POINT
-            #
-            # TẤT CẢ 3 POINT ĐỀU CÓ vx/vy
-            # =================================================
-
-            points.append({
-
-                "x": px,
-                "y": py,
-
-                "local_x": local_x,
-                "local_y": local_y,
-
-                "vx": point_vx,
-                "vy": point_vy,
-
-                "phase": point_phase,
-                "phase_speed": point_phase_speed,
-
-                "max_radius": point_max_radius
-            })
-
-        # =================================================
-        # VẬN TỐC TÂM TAM GIÁC
+        # VẬN TỐC TÂM NHÓM
         # =================================================
 
         direction = random.uniform(
             0,
             math.pi * 2
         )
-
         speed = random.uniform(
-            OUTER_MIN_SPEED,
-            OUTER_MAX_SPEED
+            DOT_GROUP_MIN_SPEED,
+            DOT_GROUP_MAX_SPEED
         )
 
         vx = (
             math.cos(direction)
             * speed
         )
-
         vy = (
             math.sin(direction)
             * speed
@@ -1016,13 +796,13 @@ def create_outer_triangles(clusters):
         )
 
         phase_speed = random.uniform(
-            OUTER_WAVE_MIN,
-            OUTER_WAVE_MAX
+            DOT_GROUP_WAVE_MIN,
+            DOT_GROUP_WAVE_MAX
         )
 
         sway_amount = random.uniform(
-            OUTER_SWAY_MIN,
-            OUTER_SWAY_MAX
+            DOT_GROUP_SWAY_MIN,
+            DOT_GROUP_SWAY_MAX
         )
 
         sway_direction = random.uniform(
@@ -1031,42 +811,107 @@ def create_outer_triangles(clusters):
         )
 
         # =================================================
-        # XOAY
+        # TẠO 4 CHẤM (POINTS)
         # =================================================
 
-        rotation_speed = random.uniform(
-            OUTER_ROTATION_MIN,
-            OUTER_ROTATION_MAX
-        )
+        points = []
+
+        for i in range(4):
+
+            point_radius = random.uniform(
+                40,
+                80
+            )
+
+            point_angle = (
+                i
+                * 2
+                * math.pi
+                / 4
+            ) + random.uniform(-0.3, 0.3)
+
+            px = (
+                center_x
+                + math.cos(point_angle)
+                * point_radius
+            )
+            py = (
+                center_y
+                + math.sin(point_angle)
+                * point_radius
+            )
+
+            # Vận tốc riêng cho chấm
+            p_speed = random.uniform(
+                OUTER_POINT_MIN_SPEED,
+                OUTER_POINT_MAX_SPEED
+            )
+            p_dir = random.uniform(
+                0,
+                math.pi * 2
+            )
+
+            pvx = math.cos(p_dir) * p_speed
+            pvy = math.sin(p_dir) * p_speed
+
+            points.append({
+
+                "x": px,
+                "y": py,
+
+                "vx": pvx,
+                "vy": pvy,
+
+                "phase": random.uniform(
+                    0,
+                    math.pi * 2
+                ),
+                "phase_speed": random.uniform(
+                    0.008,
+                    0.018
+                ),
+                "max_radius": point_radius * 1.2
+
+            })
 
         # =================================================
-        # FILL
+        # TÌM TAM GIÁC GẦN NHẤT CỐ ĐỊNH CHO NHÓM NÀY
         # =================================================
 
-        filled = (
-            random.random()
-            < OUTER_FILL_PROBABILITY
-        )
+        min_dist = float("inf")
+        best_dot_idx = -1
+        best_cluster_idx = -1
+        best_point_idx = -1
+
+        for d_idx, p in enumerate(points):
+
+            for c_idx, cluster in enumerate(clusters):
+
+                for cp_idx, cp in enumerate(cluster["points"]):
+
+                    dist = math.hypot(
+                        p["x"] - cp["x"],
+                        p["y"] - cp["y"]
+                    )
+
+                    if dist < min_dist:
+
+                        min_dist = dist
+                        best_dot_idx = d_idx
+                        best_cluster_idx = c_idx
+                        best_point_idx = cp_idx
 
         # =================================================
-        # LƯU TAM GIÁC
+        # LƯU THÔNG TIN NHÓM
         # =================================================
 
-        outer_triangles.append({
+        dot_groups.append({
 
             "center_x": center_x,
             "center_y": center_y,
 
             "vx": vx,
             "vy": vy,
-
-            "radius": radius,
-
-            "scale_x": scale_x,
-            "scale_y": scale_y,
-
-            "rotation": rotation,
-            "rotation_speed": rotation_speed,
 
             "phase": phase,
             "phase_speed": phase_speed,
@@ -1076,61 +921,13 @@ def create_outer_triangles(clusters):
 
             "points": points,
 
-            "filled": filled
+            "best_dot_idx": best_dot_idx,
+            "best_cluster_idx": best_cluster_idx,
+            "best_point_idx": best_point_idx
+
         })
 
-    # =====================================================
-    # KIỂM TRA
-    # =====================================================
-
-    if len(outer_triangles) < MIN_OUTER_TRIANGLES:
-
-        raise RuntimeError(
-            "Không thể tạo đủ tam giác ngoài."
-        )
-
-    # =====================================================
-    # KIỂM TRA MỖI TAM GIÁC PHẢI CÓ ĐÚNG 3 POINT
-    # =====================================================
-
-    for index, triangle in enumerate(
-        outer_triangles
-    ):
-
-        if len(triangle["points"]) != 3:
-
-            raise RuntimeError(
-                f"Tam giác ngoài #{index} "
-                f"không có đúng 3 điểm."
-            )
-
-        for point_index, point in enumerate(
-            triangle["points"]
-        ):
-
-            required_keys = (
-                "x",
-                "y",
-                "local_x",
-                "local_y",
-                "vx",
-                "vy",
-                "phase",
-                "phase_speed",
-                "max_radius"
-            )
-
-            for key in required_keys:
-
-                if key not in point:
-
-                    raise RuntimeError(
-                        f"Tam giác #{index}, "
-                        f"point #{point_index} "
-                        f"thiếu key '{key}'."
-                    )
-
-    return outer_triangles
+    return dot_groups
 
 
 # =========================================================
@@ -1265,31 +1062,31 @@ def update_cluster(
 
 
 # =========================================================
-# UPDATE TAM GIÁC NGOÀI
+# UPDATE NHÓM ĐƯỜNG GẤP KHÚC
 # =========================================================
 
-def update_outer_triangle(
-    triangle
+def update_dot_group(
+    group
 ):
 
     # =====================================================
-    # PHASE
+    # PHASE TÂM
     # =====================================================
 
-    triangle["phase"] += (
-        triangle["phase_speed"]
+    group["phase"] += (
+        group["phase_speed"]
     )
 
     # =====================================================
     # DI CHUYỂN TÂM
     # =====================================================
 
-    triangle["center_x"] += (
-        triangle["vx"]
+    group["center_x"] += (
+        group["vx"]
     )
 
-    triangle["center_y"] += (
-        triangle["vy"]
+    group["center_y"] += (
+        group["vy"]
     )
 
     # =====================================================
@@ -1298,99 +1095,63 @@ def update_outer_triangle(
 
     sway = (
         math.sin(
-            triangle["phase"]
+            group["phase"]
         )
-        * triangle["sway_amount"]
+        * group["sway_amount"]
     )
 
     sway_x = (
         math.cos(
-            triangle["sway_direction"]
+            group["sway_direction"]
         )
         * sway
     )
 
     sway_y = (
         math.sin(
-            triangle["sway_direction"]
+            group["sway_direction"]
         )
         * sway
     )
 
-    triangle["center_x"] += (
+    group["center_x"] += (
         sway_x * 0.12
     )
 
-    triangle["center_y"] += (
+    group["center_y"] += (
         sway_y * 0.12
     )
 
     # =====================================================
-    # XOAY
+    # GIỚI HẠN TÂM (BOUNCE)
     # =====================================================
 
-    triangle["rotation"] += (
-        triangle["rotation_speed"]
-    )
+    margin = 100
+
+    if group["center_x"] < margin:
+        group["center_x"] = margin
+        group["vx"] = abs(group["vx"])
+
+    elif group["center_x"] > WIDTH - margin:
+        group["center_x"] = WIDTH - margin
+        group["vx"] = -abs(group["vx"])
+
+    if group["center_y"] < margin:
+        group["center_y"] = margin
+        group["vy"] = abs(group["vy"])
+
+    elif group["center_y"] > HEIGHT - margin:
+        group["center_y"] = HEIGHT - margin
+        group["vy"] = -abs(group["vy"])
 
     # =====================================================
-    # GIỚI HẠN TÂM
+    # UPDATE 4 CHẤM RIÊNG
     # =====================================================
 
-    margin = 110
-
-    if triangle["center_x"] < margin:
-
-        triangle["center_x"] = margin
-
-        triangle["vx"] = abs(
-            triangle["vx"]
-        )
-
-    elif triangle["center_x"] > WIDTH - margin:
-
-        triangle["center_x"] = (
-            WIDTH - margin
-        )
-
-        triangle["vx"] = -abs(
-            triangle["vx"]
-        )
-
-    if triangle["center_y"] < margin:
-
-        triangle["center_y"] = margin
-
-        triangle["vy"] = abs(
-            triangle["vy"]
-        )
-
-    elif triangle["center_y"] > HEIGHT - margin:
-
-        triangle["center_y"] = (
-            HEIGHT - margin
-        )
-
-        triangle["vy"] = -abs(
-            triangle["vy"]
-        )
-
-    # =====================================================
-    # UPDATE 3 POINT RIÊNG
-    # =====================================================
-
-    for p in triangle["points"]:
-
-        # =================================================
-        # DI CHUYỂN
-        # =================================================
+    for p in group["points"]:
 
         p["x"] += p["vx"]
         p["y"] += p["vy"]
-
-        # =================================================
-        # DAO ĐỘNG
-        # =================================================
 
         p["phase"] += (
             p["phase_speed"]
@@ -1410,84 +1171,25 @@ def update_outer_triangle(
             * OUTER_POINT_WANDER_FORCE
         )
 
-        # =================================================
-        # GIỚI HẠN TỐC ĐỘ
-        # =================================================
-
         speed = math.hypot(
             p["vx"],
             p["vy"]
         )
 
         if speed > OUTER_POINT_MAX_SPEED:
-
-            p["vx"] = (
-                p["vx"]
-                / speed
-                * OUTER_POINT_MAX_SPEED
-            )
-
-            p["vy"] = (
-                p["vy"]
-                / speed
-                * OUTER_POINT_MAX_SPEED
-            )
+            p["vx"] = (p["vx"] / speed) * OUTER_POINT_MAX_SPEED
+            p["vy"] = (p["vy"] / speed) * OUTER_POINT_MAX_SPEED
 
         elif speed < OUTER_POINT_MIN_SPEED:
+            if speed > 0:
+                p["vx"] = (p["vx"] / speed) * OUTER_POINT_MIN_SPEED
+                p["vy"] = (p["vy"] / speed) * OUTER_POINT_MIN_SPEED
 
-            if speed == 0:
+        # KÉO VỀ TÂM NHÓM
+        dx = p["x"] - group["center_x"]
+        dy = p["y"] - group["center_y"]
 
-                direction = random.uniform(
-                    0,
-                    math.pi * 2
-                )
-
-                p["vx"] = (
-                    math.cos(direction)
-                    * OUTER_POINT_MIN_SPEED
-                )
-
-                p["vy"] = (
-                    math.sin(direction)
-                    * OUTER_POINT_MIN_SPEED
-                )
-
-            else:
-
-                p["vx"] = (
-                    p["vx"]
-                    / speed
-                    * OUTER_POINT_MIN_SPEED
-                )
-
-                p["vy"] = (
-                    p["vy"]
-                    / speed
-                    * OUTER_POINT_MIN_SPEED
-                )
-
-        # =================================================
-        # KHOẢNG CÁCH TỚI TÂM
-        # =================================================
-
-        dx = (
-            p["x"]
-            - triangle["center_x"]
-        )
-
-        dy = (
-            p["y"]
-            - triangle["center_y"]
-        )
-
-        distance = math.hypot(
-            dx,
-            dy
-        )
-
-        # =================================================
-        # KÉO VỀ TÂM
-        # =================================================
+        distance = math.hypot(dx, dy)
 
         if distance > p["max_radius"]:
 
@@ -1498,17 +1200,12 @@ def update_outer_triangle(
 
                 force = OUTER_POINT_RETURN_FORCE
 
-                p["vx"] -= (
-                    nx * force
-                )
-
-                p["vy"] -= (
-                    ny * force
-                )
+                p["vx"] -= (nx * force)
+                p["vy"] -= (ny * force)
 
 
 # =========================================================
-# VẼ CONNECTION
+# VẼ CONNECTION CỤM CHÍNH
 # =========================================================
 
 def draw_connections(
@@ -1565,6 +1262,106 @@ def draw_connections(
             LINE_WIDTH,
             cv2.LINE_AA
         )
+
+
+# =========================================================
+# VẼ ĐƯỜNG GẤP KHÚC VÀ NỐI VỚI TAM GIÁC
+# =========================================================
+
+def draw_dot_groups(
+    frame,
+    dot_groups,
+    clusters
+):
+
+    for group in dot_groups:
+        
+        points = group["points"]
+
+        # =================================================
+        # 1. VẼ 3 ĐƯỜNG GẤP KHÚC (NỐI 4 CHẤM)
+        # =================================================
+
+        for i in range(3):
+
+            pt1 = (
+                int(points[i]["x"]),
+                int(points[i]["y"])
+            )
+            pt2 = (
+                int(points[i + 1]["x"]),
+                int(points[i + 1]["y"])
+            )
+
+            cv2.line(
+                frame,
+                pt1,
+                pt2,
+                COLOR,
+                LINE_WIDTH,
+                cv2.LINE_AA
+            )
+
+        # =================================================
+        # 2. VẼ ĐƯỜNG NỐI VỚI TAM GIÁC (ĐÃ CỐ ĐỊNH)
+        # =================================================
+        
+        best_dot_idx = group["best_dot_idx"]
+        best_cluster_idx = group["best_cluster_idx"]
+        best_point_idx = group["best_point_idx"]
+
+        if (
+            best_dot_idx != -1
+            and best_cluster_idx != -1
+            and best_point_idx != -1
+        ):
+
+            p_dot = points[best_dot_idx]
+            
+            p_target = clusters[
+                best_cluster_idx
+            ]["points"][
+                best_point_idx
+            ]
+
+            pt_dot = (
+                int(p_dot["x"]),
+                int(p_dot["y"])
+            )
+            
+            pt_target = (
+                int(p_target["x"]),
+                int(p_target["y"])
+            )
+
+            cv2.line(
+                frame,
+                pt_dot,
+                pt_target,
+                CONNECTION_COLOR,
+                LINE_WIDTH,
+                cv2.LINE_AA
+            )
+
+        # =================================================
+        # 3. VẼ 4 CHẤM
+        # =================================================
+
+        for p in points:
+
+            center = (
+                int(p["x"]),
+                int(p["y"])
+            )
+
+            cv2.circle(
+                frame,
+                center,
+                OUTER_POINT_RADIUS,
+                COLOR,
+                -1,
+                cv2.LINE_AA
+            )
 
 
 # =========================================================
@@ -1678,123 +1475,6 @@ def draw_cluster(
 
 
 # =========================================================
-# VẼ TAM GIÁC NGOÀI
-# =========================================================
-
-def draw_outer_triangle(
-    frame,
-    triangle
-):
-
-    points = triangle["points"]
-
-    # =====================================================
-    # LUÔN ĐÚNG 3 ĐIỂM
-    # =====================================================
-
-    if len(points) != 3:
-        return
-
-    pt1 = (
-        int(points[0]["x"]),
-        int(points[0]["y"])
-    )
-
-    pt2 = (
-        int(points[1]["x"]),
-        int(points[1]["y"])
-    )
-
-    pt3 = (
-        int(points[2]["x"]),
-        int(points[2]["y"])
-    )
-
-    polygon = np.array(
-        [
-            pt1,
-            pt2,
-            pt3
-        ],
-        dtype=np.int32
-    )
-
-    # =====================================================
-    # FILL
-    # =====================================================
-
-    if triangle["filled"]:
-
-        overlay = frame.copy()
-
-        cv2.fillPoly(
-            overlay,
-            [polygon],
-            FILL_COLOR
-        )
-
-        cv2.addWeighted(
-            overlay,
-            0.30,
-            frame,
-            0.70,
-            0,
-            frame
-        )
-
-    # =====================================================
-    # 3 CẠNH
-    # =====================================================
-
-    cv2.line(
-        frame,
-        pt1,
-        pt2,
-        COLOR,
-        LINE_WIDTH,
-        cv2.LINE_AA
-    )
-
-    cv2.line(
-        frame,
-        pt2,
-        pt3,
-        COLOR,
-        LINE_WIDTH,
-        cv2.LINE_AA
-    )
-
-    cv2.line(
-        frame,
-        pt3,
-        pt1,
-        COLOR,
-        LINE_WIDTH,
-        cv2.LINE_AA
-    )
-
-    # =====================================================
-    # 3 ĐIỂM
-    # =====================================================
-
-    for p in points:
-
-        center = (
-            int(p["x"]),
-            int(p["y"])
-        )
-
-        cv2.circle(
-            frame,
-            center,
-            OUTER_POINT_RADIUS,
-            COLOR,
-            -1,
-            cv2.LINE_AA
-        )
-
-
-# =========================================================
 # MAIN
 # =========================================================
 
@@ -1815,14 +1495,12 @@ def main():
     )
 
     # =====================================================
-    # TẠO TAM GIÁC NGOÀI
+    # TẠO NHÓM ĐƯỜNG GẤP KHÚC
     # =====================================================
 
-    # outer_triangles = create_outer_triangles(
-    #     clusters
-    # )
-    # Không tạo tam giác ngoài
-    outer_triangles = []
+    dot_groups = create_dot_groups(
+        clusters
+    )
 
     # =====================================================
     # THỐNG KÊ
@@ -1832,17 +1510,6 @@ def main():
         1
         for cluster in clusters
         if cluster["filled"]
-    )
-
-    outer_filled_count = sum(
-        1
-        for triangle in outer_triangles
-        if triangle["filled"]
-    )
-
-    total_outer_points = sum(
-        len(triangle["points"])
-        for triangle in outer_triangles
     )
 
     print(
@@ -1891,36 +1558,14 @@ def main():
         f"Tam giác chính fill : "
         f"{filled_count}"
     )
-
+    
     print(
-        f"Tam giác ngoài      : "
-        f"{len(outer_triangles)}"
-    )
-
-    print(
-        f"Điểm tam giác ngoài : "
-        f"{total_outer_points}"
-    )
-
-    print(
-        f"Tam giác ngoài fill : "
-        f"{outer_filled_count}"
+        f"Nhóm gấp khúc (4ch) : "
+        f"{len(dot_groups)}"
     )
 
     print(
         "Mạng chính          : LIÊN THÔNG"
-    )
-
-    print(
-        "Tam giác ngoài      : 3 ĐIỂM / TAM GIÁC"
-    )
-
-    print(
-        "Chuyển động ngoài   : MẠNH + XOAY + DAO ĐỘNG"
-    )
-
-    print(
-        "Kích thước ngoài    : LỚN + KÉO DÀI"
     )
 
     print(
@@ -1993,24 +1638,13 @@ def main():
             )
 
         # =================================================
-        # UPDATE TAM GIÁC NGOÀI
+        # UPDATE NHÓM ĐƯỜNG GẤP KHÚC
         # =================================================
 
-        for triangle in outer_triangles:
+        for group in dot_groups:
 
-            update_outer_triangle(
-                triangle
-            )
-
-        # =================================================
-        # VẼ TAM GIÁC NGOÀI TRƯỚC
-        # =================================================
-
-        for triangle in outer_triangles:
-
-            draw_outer_triangle(
-                frame,
-                triangle
+            update_dot_group(
+                group
             )
 
         # =================================================
@@ -2033,6 +1667,17 @@ def main():
                 frame,
                 cluster
             )
+            
+        # =================================================
+        # VẼ NHÓM ĐƯỜNG GẤP KHÚC VÀ CONNECTION
+        # (Vẽ sau cùng để đè lên các network khác)
+        # =================================================
+
+        draw_dot_groups(
+            frame,
+            dot_groups,
+            clusters
+        )
 
         # =================================================
         # GHI VIDEO
