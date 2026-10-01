@@ -33,7 +33,7 @@ LINE_WIDTH = 2
 
 
 # =========================================================
-# PHÂN BỐ CỤM CHÍNH
+# PHÂN BỐ
 # =========================================================
 
 CENTER_X = WIDTH / 2
@@ -57,75 +57,6 @@ MIN_EXTRA_CONNECTIONS = 0
 MAX_EXTRA_CONNECTIONS = 1
 
 EXTRA_CONNECTION_PROBABILITY = 0.35
-
-
-# =========================================================
-# TAM GIÁC NGOÀI
-# =========================================================
-
-MIN_OUTER_TRIANGLES = 10
-MAX_OUTER_TRIANGLES = 12
-
-
-# =========================================================
-# VÙNG PHÂN BỐ TAM GIÁC NGOÀI
-# =========================================================
-
-OUTER_MIN_RADIUS_X = 650
-OUTER_MIN_RADIUS_Y = 350
-
-OUTER_MAX_RADIUS_X = 900
-OUTER_MAX_RADIUS_Y = 480
-
-
-# =========================================================
-# KHOẢNG CÁCH
-# =========================================================
-
-MIN_OUTER_DISTANCE = 110
-
-
-# =========================================================
-# KÍCH THƯỚC TAM GIÁC NGOÀI
-# =========================================================
-
-OUTER_TRIANGLE_MIN_RADIUS = 32
-OUTER_TRIANGLE_MAX_RADIUS = 58
-
-
-# =========================================================
-# TỶ LỆ KÉO DÀI
-# =========================================================
-
-OUTER_SCALE_MIN_X = 1.05
-OUTER_SCALE_MAX_X = 1.35
-
-OUTER_SCALE_MIN_Y = 0.90
-OUTER_SCALE_MAX_Y = 1.10
-
-
-# =========================================================
-# FILL
-# =========================================================
-
-OUTER_FILL_PROBABILITY = 0.40
-
-
-# =========================================================
-# CHUYỂN ĐỘNG TAM GIÁC NGOÀI
-# =========================================================
-
-OUTER_MIN_SPEED = 0.25
-OUTER_MAX_SPEED = 0.75
-
-OUTER_WAVE_MIN = 0.015
-OUTER_WAVE_MAX = 0.045
-
-OUTER_ROTATION_MIN = -0.006
-OUTER_ROTATION_MAX = 0.006
-
-OUTER_SWAY_MIN = 3.0
-OUTER_SWAY_MAX = 9.0
 
 
 # =========================================================
@@ -702,26 +633,7 @@ def create_connections(clusters):
 
 
 # =========================================================
-# XOAY ĐIỂM
-# =========================================================
-
-def rotate_point(
-    x,
-    y,
-    angle
-):
-
-    cos_a = math.cos(angle)
-    sin_a = math.sin(angle)
-
-    return (
-        x * cos_a - y * sin_a,
-        x * sin_a + y * cos_a
-    )
-
-
-# =========================================================
-# TẠO NHÓM ĐƯỜNG GẤP KHÚC (4 CHẤM)
+# TẠO NHÓM ĐƯỜNG GẤP KHÚC (4 CHẤM) NẰM Ở GIỮA
 # =========================================================
 
 def create_dot_groups(clusters):
@@ -731,6 +643,8 @@ def create_dot_groups(clusters):
     attempts = 0
     max_attempts = 5000
 
+    margin = 150
+
     while (
         len(dot_groups) < NUM_DOT_GROUPS
         and attempts < max_attempts
@@ -738,19 +652,32 @@ def create_dot_groups(clusters):
         attempts += 1
 
         # =================================================
-        # VỊ TRÍ TÂM NHÓM
+        # VỊ TRÍ TÂM NHÓM - TẬP TRUNG Ở GIỮA
         # =================================================
 
-        center_x = random.uniform(
-            150,
-            WIDTH - 150
+        center_x = random.gauss(
+            CENTER_X,
+            DISTRIBUTION_X / 3.0
         )
-        center_y = random.uniform(
-            150,
-            HEIGHT - 150
+        
+        center_y = random.gauss(
+            CENTER_Y,
+            DISTRIBUTION_Y / 3.0
         )
+        
+        if center_x < margin:
+            continue
+            
+        if center_x > WIDTH - margin:
+            continue
+            
+        if center_y < margin:
+            continue
+            
+        if center_y > HEIGHT - margin:
+            continue
 
-        # Tránh các cụm chính
+        # Tránh đè sát lên các cụm chính
         too_close = False
         for cluster in clusters:
             dist = math.hypot(
@@ -1670,7 +1597,6 @@ def main():
             
         # =================================================
         # VẼ NHÓM ĐƯỜNG GẤP KHÚC VÀ CONNECTION
-        # (Vẽ sau cùng để đè lên các network khác)
         # =================================================
 
         draw_dot_groups(
