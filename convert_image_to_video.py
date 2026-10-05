@@ -1,7 +1,7 @@
 from moviepy.editor import ImageClip, AudioFileClip
 
 image = "input_image.jpg"
-audio = "electro_track.mp3"
+audio = "background_track.mp3"
 
 clip = ImageClip(image, duration=8)
 audio_clip = AudioFileClip(audio).subclip(0, 8)
