@@ -149,7 +149,7 @@ print("Đang ép xung và chuyển đổi trực tiếp sang MP3 (320kbps)...")
 temp_wav = "temp_output.wav"
 wavfile.write(temp_wav, SAMPLE_RATE, master_16bit)
 
-output_mp3 = "remix_background.mp3"
+output_mp3 = "remix_background_music.mp3"
 # Gọi lệnh ffmpeg để nén sang mp3 chất lượng cao nhất (320k)
 subprocess.run([
     "ffmpeg", "-y", "-i", temp_wav, 
