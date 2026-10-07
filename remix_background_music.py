@@ -1,3 +1,4 @@
+import os
 import subprocess
 import numpy as np
 from scipy.io import wavfile
@@ -6,7 +7,7 @@ from scipy.io import wavfile
 SAMPLE_RATE = 44100
 BPM = 128
 BEAT = 60 / BPM
-TONG_THOI_GIAN = 18.0  # Chính xác 18 giây
+TONG_THOI_GIAN = 30.0  # Đã thay đổi thành 30 giây chính xác (64 nhịp / 16 bar)
 
 # --- 2. CÔNG CỤ TẠO ÂM THANH (SYNTHESIZERS) ---
 
@@ -65,7 +66,7 @@ def apply_delay(track, delay_time, feedback=0.4):
         out[i] += out[i - delay_samples] * feedback
     return out
 
-# Tạo rãnh âm thanh (18 giây)
+# Tạo rãnh âm thanh (30 giây)
 so_luong_mau = int(TONG_THOI_GIAN * SAMPLE_RATE)
 track_drum = np.zeros(so_luong_mau)
 track_bass = np.zeros(so_luong_mau)
@@ -84,7 +85,7 @@ melody_notes = [
     [392.00, 493.88, 587.33, 783.99]
 ]
 
-print("Đang tính toán tín hiệu nhạc...")
+print("Đang tính toán tín hiệu nhạc (30 giây)...")
 
 # --- 4. SẮP XẾP BÀI HÁT ---
 so_nhip = int(np.ceil(TONG_THOI_GIAN / BEAT))
@@ -93,6 +94,7 @@ for nhip in range(so_nhip):
     if t >= TONG_THOI_GIAN:
         break
     
+    # Drums
     them_vao_track(track_drum, kick, t)
     
     if nhip % 2 == 1:
@@ -101,6 +103,7 @@ for nhip in range(so_nhip):
     them_vao_track(track_drum, hat_o, t + BEAT * 0.5)
     them_vao_track(track_drum, hat_c, t + BEAT * 0.75)
     
+    # Bass & Melodies
     bar_hien_tai = nhip // 4
     hop_am_idx = bar_hien_tai % 4
     
@@ -132,8 +135,8 @@ track_synth = track_synth * sidechain_env
 
 master_track = track_drum + track_bass * 1.2 + track_synth * 0.8
 
-# Fade out 1 giây cuối
-fade_out_samples = int(SAMPLE_RATE * 1.0)
+# Fade out 1.5 giây cuối để bài nhạc dừng êm hơn khi đạt 30s
+fade_out_samples = int(SAMPLE_RATE * 1.5)
 fade_out = np.linspace(1.0, 0.0, fade_out_samples)
 master_track[-fade_out_samples:] *= fade_out
 
@@ -145,20 +148,17 @@ master_16bit = np.int16(master_track * 32767)
 # --- 6. XUẤT TRỰC TIẾP RA MP3 BẰNG SUBPROCESS & FFMPEG ---
 print("Đang ép xung và chuyển đổi trực tiếp sang MP3 (320kbps)...")
 
-# Bước tạm lưu ra wav ẩn hoặc truyền thẳng luồng dữ liệu qua stdin của ffmpeg
 temp_wav = "temp_output.wav"
 wavfile.write(temp_wav, SAMPLE_RATE, master_16bit)
 
 output_mp3 = "remix_background_music.mp3"
-# Gọi lệnh ffmpeg để nén sang mp3 chất lượng cao nhất (320k)
 subprocess.run([
     "ffmpeg", "-y", "-i", temp_wav, 
     "-b:a", "320k", output_mp3
 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # Xóa file wav tạm
-import os
 if os.path.exists(temp_wav):
     os.remove(temp_wav)
 
-print(f"Thành công! Đã tạo file: {output_mp3} chuẩn chất lượng 320kbps.")
+print(f"Thành công! Đã tạo file 30s: {output_mp3} chuẩn chất lượng 320kbps.")
